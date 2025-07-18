@@ -78,3 +78,4 @@ Route::post('/mpesa/callback', [PaymentController::class, 'callback'])->name('mp
 
 // 🔐 Breeze Auth Routes
 require __DIR__.'/auth.php';
+
