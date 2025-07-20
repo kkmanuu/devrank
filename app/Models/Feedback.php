@@ -8,4 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Feedback extends Model
 {
     use HasFactory;
+    protected $fillable = ['submission_id', 'correct', 'incorrect'];
+
+    public function submission()
+    {
+        return $this->belongsTo(Submission::class);
+    }
 }
