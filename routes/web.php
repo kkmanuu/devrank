@@ -4,6 +4,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\CoachingController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MessageController;
@@ -50,7 +51,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/submit-project', [ProjectController::class, 'store'])->name('project.store');
     Route::get('/submissions/{submission}', [ProjectController::class, 'show'])->name('submission.show');
 
-    Route::get('/coaching', [CoachingController::class, 'index'])->name('coaching');
+    Route::get('/coaching', [CoachingController::class, 'index'])->name('coaching.index');
     Route::get('/events', [CoachingController::class, 'index'])->name('events.index');
     Route::post('/book-coaching', [CoachingController::class, 'book'])->name('coaching.book');
 
@@ -60,18 +61,26 @@ Route::middleware(['auth'])->group(function () {
     })->name('payment.required');
 
     Route::post('/message', [MessageController::class, 'store'])->name('message.store');
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
 });
 
 // 🛡️ Admin-Only Routes
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
-    Route::get('/submissions', [DashboardController::class, 'manageSubmissions'])->name('admin.submissions');
-    Route::get('/users', [DashboardController::class, 'manageUsers'])->name('admin.users');
-    Route::get('/payments', [DashboardController::class, 'managePayments'])->name('admin.payments');
-    Route::get('/messages', [DashboardController::class, 'manageMessages'])->name('admin.messages');
-    Route::post('/submissions/{submission}/review', [AdminController::class, 'review'])->name('admin.review');
-    Route::post('/messages/{message}/respond', [MessageController::class, 'respond'])->name('message.respond');
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'adminDashboard'])->name('dashboard');
+    Route::get('/submissions', [DashboardController::class, 'manageSubmissions'])->name('submissions');
+    Route::get('/users', [DashboardController::class, 'manageUsers'])->name('users');
+    Route::get('/payments', [DashboardController::class, 'managePayments'])->name('payments');
+    Route::get('/messages', [DashboardController::class, 'manageMessages'])->name('messages');
+    Route::post('/submissions/{submission}/review', [AdminController::class, 'review'])->name('review');
+    Route::post('/messages/{message}/respond', [MessageController::class, 'respond'])->name('messages.respond');
+
+    Route::get('/coaching', [DashboardController::class, 'manageCoaching'])->name('coaching.index');
+    Route::post('/coaching/{session}/assign', [CoachingController::class, 'assign'])->name('coaching.assign');
+
+    Route::resource('events', EventController::class);
+    Route::post('/events/{event}/users/{user}/participation', [EventController::class, 'toggleParticipation'])->name('events.toggleParticipation');
 });
+
 
 // 📲 M-PESA Callback
 Route::post('/mpesa/callback', [PaymentController::class, 'callback'])->name('mpesa.callback');
