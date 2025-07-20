@@ -8,4 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 class Event extends Model
 {
     use HasFactory;
+    
+    protected $fillable = [
+    'title',
+    'description',
+    'event_date',
+    'start_time',
+    'status',
+];
+
+
+public function users()
+{
+    return $this->belongsToMany(User::class)
+                ->withPivot('participated')
+                ->withTimestamps();
+}
 }
