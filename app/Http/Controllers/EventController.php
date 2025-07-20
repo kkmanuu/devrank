@@ -2,84 +2,65 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    public function __construct()
+    {
+        $this->middleware(['auth', 'role:admin']);
+    }
+
     public function index()
     {
-        // Logic to retrieve and display events
-        return view('events');
+        $events = Event::withCount(['users as registered_count', 'users as participants' => function ($query) {
+            $query->wherePivot('participated', true);
+        }])->latest()->paginate(10);
+        return view('admin.events.index', compact('events'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        return view('admin.events.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+   public function store(Request $request)
+{
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'event_date' => 'required|date|after:now',
+        'start_time' => 'required|date_format:H:i',
+        'status' => 'nullable|string|in:upcoming,completed,cancelled'
+    ]);
+
+    Event::create([
+        'title' => $request->title,
+        'description' => $request->description,
+        'event_date' => $request->event_date,
+        'start_time' => $request->start_time,
+        'status' => $request->status ?? 'upcoming',
+    ]);
+
+    return redirect()->route('admin.events.index')->with('success', 'Event created successfully.');
+}
+
+
+    public function show(Event $event)
     {
-        //
+        $event->load(['users' => function ($query) {
+            $query->where('role', 'student');
+        }]);
+        return view('admin.events.show', compact('event'));
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public function toggleParticipation(Request $request, Event $event, User $user)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
+        $event->users()->updateExistingPivot($user->id, ['participated' => $request->participated]);
+        return redirect()->route('admin.events.show', $event)->with('success', 'Participation updated.');
     }
 }
+?>
