@@ -39,6 +39,12 @@ class User extends Authenticatable
     }
     // User has many projects
 
+
+    public function bookings()
+{
+    return $this->hasMany(\App\Models\Booking::class);
+}
+
     public function messages()
 {
     return $this->hasMany(Message::class);
