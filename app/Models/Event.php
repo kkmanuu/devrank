@@ -14,14 +14,28 @@ class Event extends Model
     'description',
     'event_date',
     'start_time',
+    'image',
+    'created_by',
     'status',
 ];
 
+ protected $casts = [
+        'event_date' => 'date',
+    ];
 
-public function users()
-{
-    return $this->belongsToMany(User::class)
-                ->withPivot('participated')
-                ->withTimestamps();
-}
+ public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function bookings()
+    {
+        return $this->morphMany(Booking::class, 'bookable');
+    }
+
+    public function availableSlots()
+    {
+        return 50 - $this->bookings()->count();
+    }
+
 }
