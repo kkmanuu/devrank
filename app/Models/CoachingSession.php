@@ -7,23 +7,32 @@ use Illuminate\Database\Eloquent\Model;
 
 class CoachingSession extends Model
 {
-    use HasFactory;
+   use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'coach_id',
-        'topic',
-        'session_date',
-        'status',
-    ];
+    protected $fillable = ['topic', 'coach_id', 'session_date', 'start_time', 'capacity', 'status', 'created_by', 'scheduled_at', ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+    protected $casts = [
+    'session_date' => 'date',
+];
 
     public function coach()
     {
         return $this->belongsTo(User::class, 'coach_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function bookings()
+    {
+        return $this->morphMany(Booking::class, 'bookable');
+    }
+
+
+    public function availableSlots()
+    {
+        return $this->capacity - $this->bookings()->count();
     }
 }
