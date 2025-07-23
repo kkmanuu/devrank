@@ -19,18 +19,26 @@ class DashboardController extends Controller
         $this->middleware(['auth', 'role:admin'])->only(['adminDashboard', 'manageSubmissions', 'manageUsers', 'managePayments', 'manageMessages', 'manageCoaching']);
     }
 
-    public function studentDashboard()
-    {
-        $user = Auth::user();
-        $submissions = $user->submissions()->with(['feedback', 'project'])->latest()->get();
-        $badges = $user->badges()->get();
-        $messages = $user->messages()->latest()->get();
-        $coachingSessions = $user->coachingSessions()->with('coach')->latest()->get();
-        $submissionCount = $user->submissions()->count();
-        $canSubmit = $submissionCount < 4 || $user->hasActivePayment();
+   public function studentDashboard()
+{
+    $user = Auth::user();
+    $submissions = $user->submissions()->with(['feedback', 'project'])->latest()->get();
+    $badges = $user->badges()->get();
+    $messages = $user->messages()->latest()->get();
+     $coachingSessions = $user->coachingSessions()->with('coach')->latest()->get();
+    $submissionCount = $user->submissions()->count();
+    $canSubmit = $submissionCount < 4 || $user->hasActivePayment();
 
-        return view('student.dashboard', compact('submissions', 'badges', 'messages', 'coachingSessions', 'submissionCount', 'canSubmit'));
-    }
+    return view('student.dashboard', compact(
+        'submissions',
+        'badges',
+        'messages',
+        'coachingSessions',
+        'submissionCount',
+        'canSubmit'
+    ));
+}
+
 
     public function adminDashboard()
     {
@@ -44,6 +52,7 @@ class DashboardController extends Controller
             $query->wherePivot('participated', true);
         }])->get()->sum('users_count');
         $coachingBookings = CoachingSession::count();
+        
 
         return view('admin.dashboard', compact('totalUsers', 'totalSubmissions', 'pendingReviews', 'totalPayments', 'pendingMessages', 'eventRegistrations', 'eventParticipants', 'coachingBookings'));
     }
