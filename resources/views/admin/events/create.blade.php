@@ -40,6 +40,7 @@
         .btn-custom:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
+        .faq-item { margin-bottom: 20px; }
     </style>
 
     <div class="content">
@@ -65,6 +66,28 @@
                     <textarea name="description" class="form-control" rows="5">{{ old('description') }}</textarea>
                 </div>
                 <div class="mb-3">
+                    <label for="agenda" class="form-label">{{ __('messages.event_agenda') }}</label>
+                    <textarea name="agenda" class="form-control" rows="5">{{ old('agenda') }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="about" class="form-label">{{ __('messages.event_about') }}</label>
+                    <textarea name="about" class="form-control" rows="5">{{ old('about') }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ __('messages.event_faqs') }}</label>
+                    <div id="faq-container">
+                        <div class="faq-item">
+                            <input type="text" name="faqs[0][question]" class="form-control mb-2" placeholder="Question" value="{{ old('faqs.0.question') }}">
+                            <textarea name="faqs[0][answer]" class="form-control" rows="3" placeholder="Answer">{{ old('faqs.0.answer') }}</textarea>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-custom mt-2" onclick="addFaq()">Add Another FAQ</button>
+                </div>
+                <div class="mb-3">
+                    <label for="location" class="form-label">{{ __('messages.event_location') }}</label>
+                    <input type="text" name="location" class="form-control" value="{{ old('location') }}">
+                </div>
+                <div class="mb-3">
                     <label for="image" class="form-label">{{ __('messages.event_image') }}</label>
                     <input type="file" name="image" class="form-control" accept="image/*">
                 </div>
@@ -88,4 +111,19 @@
             </form>
         </div>
     </div>
+
+    <script>
+        let faqIndex = 1;
+        function addFaq() {
+            const container = document.getElementById('faq-container');
+            const faqItem = document.createElement('div');
+            faqItem.className = 'faq-item';
+            faqItem.innerHTML = `
+                <input type="text" name="faqs[${faqIndex}][question]" class="form-control mb-2" placeholder="Question">
+                <textarea name="faqs[${faqIndex}][answer]" class="form-control" rows="3" placeholder="Answer"></textarea>
+            `;
+            container.appendChild(faqItem);
+            faqIndex++;
+        }
+    </script>
 @endsection
