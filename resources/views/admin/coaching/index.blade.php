@@ -29,32 +29,40 @@
         .btn-custom:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
+        .btn-create {
+            margin-bottom: 20px;
+            float: right;
+        }
     </style>
 
     <div class="content">
-        <h1 class="mb-4 text-white fw-bold">Coaching Sessions</h1>
-
-        <a href="{{ route('admin.coaching.create') }}" class="btn btn-custom mb-4">
-            <i class="bi bi-plus-circle"></i> Create Coaching Session
-        </a>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="text-white fw-bold">Coaching Sessions</h1>
+            <a href="{{ route('admin.coaching.create') }}" class="btn btn-custom btn-create">
+                + Create Coaching Session
+            </a>
+        </div>
 
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
         @if($sessions->isEmpty())
-            <p>No coaching sessions available yet. Click the button above to create one.</p>
+            <p>No coaching sessions available yet.</p>
         @else
             <div class="row g-4">
                 @foreach($sessions as $session)
                     <div class="col-md-4">
                         <div class="card p-3">
                             <h5 class="card-title">{{ $session->topic }}</h5>
+                            <p><strong>Description:</strong> {{ Str::limit($session->description, 100) ?? 'N/A' }}</p>
+                            <p><strong>Type:</strong> {{ $session->type ?? 'N/A' }}</p>
                             <p><strong>Coach:</strong> {{ $session->coach->name ?? 'Not Assigned' }}</p>
                             <p><strong>Date:</strong> {{ $session->session_date->format('F d, Y') }}</p>
                             <p><strong>Time:</strong> {{ $session->start_time }}</p>
                             <p><strong>Available Slots:</strong> {{ $session->availableSlots() }}</p>
                             <span class="badge bg-light text-dark">{{ ucfirst($session->status) }}</span>
+                            <a href="{{ route('coaching.show', $session) }}" class="btn btn-custom btn-sm mt-2">View Details</a>
                         </div>
                     </div>
                 @endforeach
