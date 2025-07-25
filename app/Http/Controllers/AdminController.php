@@ -10,9 +10,10 @@ use App\Models\Booking;
 use App\Models\Badge;
 use App\Models\Submission;
 use App\Models\User;
+use App\Models\ContactMessage;
 use App\Models\EventRegistration;
 use App\Models\CoachingSession;
-
+use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -40,6 +41,9 @@ class AdminController extends Controller
         $coachingBookings = CoachingSession::count();
         $coachingSessions = CoachingSession::latest()->get();
         $eventBookings = Booking::count();
+        $services = Service::latest()->get();
+        $totalServices = Service::count();
+        $contactMessages = ContactMessage::latest()->get();
 
         return view('admin.dashboard', [
             'totalUsers' => $totalUsers,
@@ -53,6 +57,9 @@ class AdminController extends Controller
             'coachingSessions' => $coachingSessions,
             'eventBookings' => $eventBookings,
             'events' => $events,
+            'services' => $services,
+            'totalServices' => $totalServices,
+            'contactMessages' => $contactMessages,
         ]);
     }
 
