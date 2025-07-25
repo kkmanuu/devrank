@@ -47,6 +47,9 @@
             scroll-behavior: smooth;
         }
     </style>
+
+    <!-- Extra Styles from Child Views -->
+    @stack('styles')
 </head>
 <body>
 
@@ -101,6 +104,9 @@
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Extra Scripts from Child Views -->
+    @stack('scripts')
 
 </body>
 </html>
