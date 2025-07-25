@@ -7,13 +7,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class CoachingSession extends Model
 {
-   use HasFactory;
+  use HasFactory;
 
-    protected $fillable = ['topic', 'coach_id', 'session_date', 'start_time', 'capacity', 'status', 'created_by', 'scheduled_at', ];
+    protected $fillable = [
+        'topic',
+        'description',
+        'type',
+        'coach_id',
+        'session_date',
+        'start_time',
+        'capacity',
+        'status',
+        'created_by',
+        'scheduled_at',
+        'user_id',
+    ];
 
     protected $casts = [
-    'session_date' => 'date',
-];
+        'session_date' => 'date',
+    ];
 
     public function coach()
     {
@@ -29,7 +41,6 @@ class CoachingSession extends Model
     {
         return $this->morphMany(Booking::class, 'bookable');
     }
-
 
     public function availableSlots()
     {
