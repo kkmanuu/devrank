@@ -13,43 +13,49 @@ class EventController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        // Only creation & storing restricted to admin
         $this->middleware('role:admin')->only(['create', 'store']);
     }
 
-    /**
-     * Show all events to any logged-in user (admin or student)
-     */
+
+    public function welcome()
+{
+    $events = Event::where('status', 'upcoming')
+                   ->orderBy('event_date')
+                   ->take(6)
+                   ->get();
+
+    return view('events.welcome', compact('events'));
+}
+
     public function index()
     {
         $events = Event::withCount('bookings')->latest()->paginate(10);
 
-        // Check user role to load appropriate view
         if (Auth::user()->isAdmin()) {
             return view('admin.events.index', compact('events'));
         }
 
-        return view('events.index', compact('events')); // create this if not already created
+        return view('events.index', compact('events'));
     }
 
-    /**
-     * Show form to create a new event (Admin only)
-     */
     public function create()
     {
         return view('admin.events.create');
     }
 
-    /**
-     * Store a new event (Admin only)
-     */
     public function store(Request $request)
     {
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'agenda' => 'nullable|string',
+            'about' => 'nullable|string',
+            'faqs' => 'nullable|array',
+            'faqs.*.question' => 'required_with:faqs|string',
+            'faqs.*.answer' => 'required_with:faqs|string',
             'event_date' => 'required|date|after:now',
             'start_time' => 'required|date_format:H:i',
+            'location' => 'nullable|string|max:255',
             'status' => 'nullable|string|in:upcoming,completed,cancelled',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
@@ -61,19 +67,20 @@ class EventController extends Controller
         Event::create([
             'title' => $request->title,
             'description' => $request->description,
-            'image' => $imagePath,
+            'agenda' => $request->agenda,
+            'about' => $request->about,
+            'faqs' => $request->faqs ? json_encode($request->faqs) : null,
             'event_date' => $request->event_date,
             'start_time' => $request->start_time,
+            'location' => $request->location,
             'status' => $request->status ?? 'upcoming',
+            'image' => $imagePath,
             'created_by' => Auth::id(),
         ]);
 
         return redirect()->route('admin.events.index')->with('success', __('messages.event_created'));
     }
 
-    /**
-     * Show a specific event to any user (student or admin)
-     */
     public function show(Event $event)
     {
         if (Auth::user()->isAdmin()) {
@@ -83,12 +90,9 @@ class EventController extends Controller
             return view('admin.events.show', compact('event'));
         }
 
-        return view('events.show', compact('event')); // create events/show.blade.php for students
+        return view('events.show', compact('event'));
     }
 
-    /**
-     * Book an event
-     */
     public function book(Event $event)
     {
         if ($event->status !== 'upcoming' || $event->availableSlots() <= 0) {
@@ -114,4 +118,3 @@ class EventController extends Controller
         return redirect()->route('dashboard')->with('success', __('messages.event_booked'));
     }
 }
-?>
