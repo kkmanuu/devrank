@@ -27,7 +27,7 @@
     </style>
 
     <div class="d-flex">
-        @include('layouts.navbar') <!-- Sidebar -->
+        @include('layouts.navbar')
         <div class="content flex-grow-1">
             <div class="container">
                 <a href="{{ route('admin.coaching.index') }}" class="btn btn-custom mb-4">
@@ -36,11 +36,12 @@
 
                 <div class="card p-4">
                     <h2 class="mb-4 fw-bold">{{ $session->topic }}</h2>
-
+                    <p><strong>Description:</strong> {{ $session->description ?? 'N/A' }}</p>
+                    <p><strong>Type:</strong> {{ $session->type ?? 'N/A' }}</p>
+                    <p><strong>Coach:</strong> {{ $session->coach->name ?? 'Not Assigned' }}</p>
                     <p><strong>Date:</strong> {{ $session->session_date->format('Y-m-d') }}</p>
                     <p><strong>Time:</strong> {{ $session->start_time }}</p>
                     <p><strong>Status:</strong> {{ ucfirst($session->status) }}</p>
-                    <p><strong>Coach:</strong> {{ $session->coach->name ?? 'Not Assigned' }}</p>
                     <p><strong>Capacity:</strong> {{ $session->capacity }}</p>
                     <p><strong>Available Slots:</strong> {{ $session->availableSlots() }}</p>
 
@@ -48,9 +49,12 @@
 
                     <h5 class="fw-semibold">Students Booked:</h5>
                     @if($session->bookings && $session->bookings->count())
-                        <ul>
+                        <ul class="list-group">
                             @foreach($session->bookings as $booking)
-                                <li>{{ $booking->user->name }} ({{ $booking->user->email }})</li>
+                                <li class="list-group-item bg-transparent text-white">
+                                    {{ $booking->full_name }} ({{ $booking->email }})<br>
+                                    <strong>Question:</strong> {{ $booking->question ?? 'N/A' }}
+                                </li>
                             @endforeach
                         </ul>
                     @else
