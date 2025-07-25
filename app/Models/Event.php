@@ -7,23 +7,28 @@ use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
-    use HasFactory;
-    
-    protected $fillable = [
-    'title',
-    'description',
-    'event_date',
-    'start_time',
-    'image',
-    'created_by',
-    'status',
-];
+   use HasFactory;
 
- protected $casts = [
-        'event_date' => 'date',
+    protected $fillable = [
+        'title',
+        'description',
+        'agenda',
+        'about',
+        'faqs',
+        'event_date',
+        'start_time',
+        'image',
+        'created_by',
+        'status',
+        'location',
     ];
 
- public function creator()
+    protected $casts = [
+        'event_date' => 'date',
+        'faqs' => 'array', // Cast faqs as array for JSON handling
+    ];
+
+    public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
