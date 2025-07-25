@@ -53,10 +53,26 @@
                     <img src="{{ asset('storage/' . $event->image) }}" class="event-image mb-3" alt="{{ $event->title }}">
                 @endif
                 <h3>{{ $event->title }}</h3>
-                <p>{{ $event->description }}</p>
+                <p><strong>{{ __('messages.event_description') }}:</strong> {{ $event->description }}</p>
+                <p><strong>{{ __('messages.event_agenda') }}:</strong> {{ $event->agenda ?? 'N/A' }}</p>
+                <p><strong>{{ __('messages.event_about') }}:</strong> {{ $event->about ?? 'N/A' }}</p>
+                <p><strong>{{ __('messages.event_location') }}:</strong> {{ $event->location ?? 'N/A' }}</p>
                 <p><strong>{{ __('messages.event_date') }}:</strong> {{ $event->event_date->format('Y-m-d') }} {{ $event->start_time }}</p>
                 <p><strong>{{ __('messages.status') }}:</strong> {{ ucfirst($event->status) }}</p>
                 <p><strong>{{ __('messages.available_slots') }}:</strong> {{ $event->availableSlots() }}</p>
+                <h4 class="mt-4">{{ __('messages.event_faqs') }}</h4>
+                @if($event->faqs && is_array($event->faqs))
+                    <ul class="list-group">
+                        @foreach($event->faqs as $faq)
+                            <li class="list-group-item bg-transparent text-white">
+                                <strong>{{ $faq['question'] }}</strong><br>
+                                {{ $faq['answer'] }}
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p>{{ __('messages.no_faqs') }}</p>
+                @endif
                 <h4 class="mt-4">{{ __('messages.booked_users') }}</h4>
                 @if($event->bookings->isEmpty())
                     <p>{{ __('messages.no_bookings') }}</p>
