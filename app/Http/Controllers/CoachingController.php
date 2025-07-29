@@ -69,6 +69,14 @@ class CoachingController extends Controller
         return view('coaching.show', compact('session'));
     }
 
+    public function showBookingForm(CoachingSession $session)
+    {
+        if ($session->status !== 'upcoming' || $session->availableSlots() <= 0) {
+            return redirect()->route('coaching.index')->with('error', __('messages.coaching_unavailable'));
+        }
+        return view('coaching.book', compact('session'));
+    }
+
     public function book(Request $request, CoachingSession $session)
     {
         $request->validate([
