@@ -13,7 +13,7 @@
                     ['name' => 'Home', 'route' => 'home'],
                     ['name' => 'About', 'route' => 'about'],
                     ['name' => 'Services', 'route' => 'services'],
-                    ['name' => 'Events', 'route' => 'events.welcome'],
+                    ['name' => 'Events', 'route' => 'events.index'],
                     ['name' => 'Coaching', 'route' => 'coaching.index'],
                     ['name' => 'Contact', 'route' => 'contact'],
                 ] as $item)
