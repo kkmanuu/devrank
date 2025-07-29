@@ -49,19 +49,23 @@ Route::middleware('auth')->group(function () {
     Route::post('/submit-project', [ProjectController::class, 'store'])->name('project.store');
     Route::get('/submissions/{submission}', [ProjectController::class, 'show'])->name('submission.show');
 
-    Route::get('/events/welcome', [EventController::class, 'welcome'])->name('events.welcome');
+   
     Route::get('/events', [EventController::class, 'index'])->name('events.index');
     Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
     Route::post('/events/{event}/book', [EventController::class, 'book'])->name('events.book');
-
+  
     Route::get('/coaching', [CoachingController::class, 'index'])->name('coaching.index');
-    Route::get('/coaching/{session}', [CoachingController::class, 'show'])->name('coaching.show');
-    Route::post('/coaching/{session}/book', [CoachingController::class, 'book'])->name('coaching.book');
+Route::get('/coaching/{session}', [CoachingController::class, 'show'])->name('coaching.show');
+Route::get('/coaching/{session}/book', [CoachingController::class, 'showBookingForm'])->name('coaching.book.form');
+Route::post('/coaching/{session}/book', [CoachingController::class, 'book'])->name('coaching.book');
+
+
 
     Route::post('/payment', [PaymentController::class, 'initiate'])->name('payment.initiate');
     Route::get('/payment/required', fn () => view('payment.required'))->name('payment.required');
 
     Route::post('/contact', [ContactMessageController::class, 'store'])->name('contact.store');
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     
 
     Route::get('/contact', [ContactMessageController::class, 'index'])->name('contact');
