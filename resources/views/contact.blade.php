@@ -90,7 +90,7 @@
         <h2 class="mb-3 fw-bold fade-in">Let's Make Your Event Memorable!</h2>
         <p class="lead mb-4 fade-in delay-1">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
         <div class="d-flex justify-content-center gap-3 fade-in delay-2">
-            <a href="{{ route('events.welcome') }}" class="btn btn-light btn-lg px-5 py-3">Book Now</a>
+            <a href="{{ route('events.index') }}" class="btn btn-light btn-lg px-5 py-3">Book Now</a>
             <a href="{{ route('coaching.index') }}" class="btn btn-outline-light btn-lg px-5 py-3">Book Coaching</a>
         </div>
     </div>
