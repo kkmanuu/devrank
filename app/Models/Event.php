@@ -43,4 +43,13 @@ class Event extends Model
         return 50 - $this->bookings()->count();
     }
 
+    public function users()
+{
+    return $this->belongsToMany(User::class, 'bookings', 'bookable_id', 'user_id')
+        ->wherePivot('bookable_type', self::class)
+        ->withTimestamps()
+        ->withPivot('participated'); // Let Laravel know this pivot column exists
+}
+
+
 }
