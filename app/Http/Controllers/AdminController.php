@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Message;
-use App\Models\Event;
-use App\Models\Payment;
-use App\Models\Feedback;
-use App\Models\Booking;
 use App\Models\Badge;
+use App\Models\Booking;
+use App\Models\CoachingSession;
+use App\Models\ContactMessage;
+use App\Models\Event;
+use App\Models\EventRegistration;
+use App\Models\Feedback;
+use App\Models\Notification;
+use App\Models\Payment;
+use App\Models\Service;
 use App\Models\Submission;
 use App\Models\User;
-use App\Models\ContactMessage;
-use App\Models\EventRegistration;
-use App\Models\CoachingSession;
-use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -26,45 +26,55 @@ class AdminController extends Controller
     }
 
     /**
-     * Admin Dashboard
+     * Display the admin dashboard.
      */
-    public function adminDashboard()
-    {
-        $totalUsers = User::count();
-        $totalSubmissions = Submission::count();
-        $pendingReviews = Submission::where('status', 'pending')->count();
-        $totalPayments = Payment::sum('amount');
-        $pendingMessages = Message::where('status', 'unread')->count();
-        $eventRegistrations = EventRegistration::count();
-        $eventParticipants = EventRegistration::distinct('user_id')->count('user_id');
-        $events = Event::latest()->get();
-        $coachingBookings = CoachingSession::count();
-        $coachingSessions = CoachingSession::latest()->get();
-        $eventBookings = Booking::count();
-        $services = Service::latest()->get();
-        $totalServices = Service::count();
-        $contactMessages = ContactMessage::latest()->get();
+     public function adminDashboard()
+{
+    $totalUsers = User::count();
+    $totalSubmissions = Submission::count();
+    $pendingReviews = Submission::where('status', 'pending')->count();
+    $totalPayments = Payment::sum('amount');
+    $pendingMessages = ContactMessage::where('is_read', false)->count();
+    $eventBookings = Booking::where('bookable_type', Event::class)->count();
+    $eventParticipants = Booking::where('bookable_type', Event::class)
+        ->distinct('user_id')
+        ->count('user_id');
+    $coachingBookings = Booking::where('bookable_type', CoachingSession::class)->count();
+    $events = Event::latest()->take(3)->get();
+    $coachingSessions = CoachingSession::with('coach')->latest()->take(3)->get();
+    $services = Service::latest()->take(3)->get();
+    $totalServices = Service::count();
+    $eventRegistrations = $eventBookings;
+    $contactMessages = ContactMessage::latest()->take(3)->get();
 
-        return view('admin.dashboard', [
-            'totalUsers' => $totalUsers,
-            'totalSubmissions' => $totalSubmissions,
-            'pendingReviews' => $pendingReviews,
-            'totalPayments' => $totalPayments,
-            'pendingMessages' => $pendingMessages,
-            'eventRegistrations' => $eventRegistrations,
-            'eventParticipants' => $eventParticipants,
-            'coachingBookings' => $coachingBookings,
-            'coachingSessions' => $coachingSessions,
-            'eventBookings' => $eventBookings,
-            'events' => $events,
-            'services' => $services,
-            'totalServices' => $totalServices,
-            'contactMessages' => $contactMessages,
-        ]);
-    }
+    // Fetch user-specific notifications
+    $user = Auth::user();
+    $notifications = $user->notifications()->latest()->take(5)->get();
+    $unreadNotificationsCount = $user->unreadNotifications()->count();
+
+    return view('admin.dashboard', compact(
+        'totalUsers',
+        'totalSubmissions',
+        'pendingReviews',
+        'totalPayments',
+        'pendingMessages',
+        'eventBookings',
+        'eventParticipants',
+        'eventRegistrations',
+        'coachingBookings',
+        'events',
+        'coachingSessions',
+        'services',
+        'totalServices',
+        'contactMessages',
+        'notifications',
+        'unreadNotificationsCount'
+    ));
+}
+
 
     /**
-     * Review Project Submission
+     * Review a submission and provide feedback.
      */
     public function review(Request $request, Submission $submission)
     {
@@ -76,13 +86,14 @@ class AdminController extends Controller
 
         $feedback = Feedback::create([
             'submission_id' => $submission->id,
-            'content' => 'Review completed.',
+            'content' => 'Manual review completed.',
             'correct' => $request->correct,
             'incorrect' => $request->incorrect,
         ]);
 
         $submission->update([
             'score' => $request->score,
+            'status' => 'reviewed',
             'feedback_id' => $feedback->id,
         ]);
 
@@ -92,19 +103,23 @@ class AdminController extends Controller
             $user->badges()->attach(Badge::firstOrCreate(['name' => '5 Submissions']));
         }
 
-        return redirect()->route('admin.submissions')->with('success', 'Submission reviewed successfully.');
+        return redirect()->route('admin.submissions')->with('success', __('messages.submission_reviewed'));
     }
 
     /**
-     * Show Create User Form
+     * Show the form to create a new user.
      */
     public function createUser()
     {
         return view('admin.users.create');
     }
 
+    public function index()
+    {
+        return view('admin.index');
+    }
     /**
-     * Store a New User
+     * Store a new user.
      */
     public function storeUser(Request $request)
     {
@@ -122,6 +137,257 @@ class AdminController extends Controller
             'role' => $request->role,
         ]);
 
-        return redirect()->route('admin.users.create')->with('success', 'User created successfully!');
+        return redirect()->route('admin.users.create')->with('success', __('messages.user_created'));
+    }
+
+    /**
+     * Display all users.
+     */
+    public function users()
+    {
+        $users = User::all();
+        return view('admin.users.index', compact('users'));
+    }
+
+    /**
+     * Display all submissions.
+     */
+    public function submissions()
+    {
+        $submissions = Submission::with('user', 'project')->latest()->get();
+        return view('admin.submissions', compact('submissions'));
+    }
+
+    /**
+     * Display all payments.
+     */
+    public function payments()
+    {
+        $payments = Payment::with('user')->latest()->get();
+        return view('admin.payments', compact('payments'));
+    }
+
+    /**
+     * Display all contact messages.
+     */
+    public function contactMessages()
+    {
+        $messages = ContactMessage::latest()->get();
+        return view('admin.contact-messages.index', compact('messages'));
+    }
+
+    /**
+     * Mark a contact message as read.
+     */
+    public function markMessageAsRead(Request $request, ContactMessage $message)
+    {
+        $message->update(['is_read' => true]);
+        return redirect()->route('admin.contact-messages.index')->with('success', 'Message marked as read.');
+    }
+
+    /**
+     * Reply to a contact message and notify the user.
+     */
+    public function replyMessage(Request $request, ContactMessage $message)
+    {
+        $request->validate(['reply' => 'required|string']);
+
+        $message->update([
+            'reply' => $request->reply,
+            'is_read' => true,
+        ]);
+
+        // Create notification for the user
+        Notification::create([
+            'user_id' => $message->user_id,
+            'type' => 'message_reply',
+            'message' => "Admin replied to your message: " . Str::limit($request->reply, 100),
+        ]);
+
+        return redirect()->route('admin.contact-messages.index')->with('success', 'Reply sent successfully.');
+    }
+
+    /**
+     * Delete a contact message.
+     */
+    public function destroyMessage(Request $request, ContactMessage $message)
+    {
+        $message->delete();
+        return redirect()->route('admin.contact-messages.index')->with('success', 'Message deleted successfully.');
+    }
+
+    /**
+     * Display all events.
+     */
+    public function events()
+    {
+        $events = Event::latest()->get();
+        return view('admin.events.index', compact('events'));
+    }
+
+    /**
+     * Show the form to create a new event.
+     */
+    public function createEvent()
+    {
+        return view('admin.events.create');
+    }
+
+    /**
+     * Store a new event and notify students.
+     */
+    public function storeEvent(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'event_date' => 'required|date',
+            'start_time' => 'required',
+            'capacity' => 'required|integer|min:1',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        $data = $request->all();
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('events', 'public');
+        }
+
+        $event = Event::create($data);
+
+        // Notify all students
+        $students = User::where('role', 'student')->get();
+        foreach ($students as $student) {
+            Notification::create([
+                'user_id' => $student->id,
+                'type' => 'event',
+                'message' => "New event created: {$event->title} on {$event->event_date->format('F d, Y')}",
+            ]);
+        }
+
+        return redirect()->route('admin.events.index')->with('success', 'Event created successfully.');
+    }
+
+    /**
+     * Show event details.
+     */
+    public function showEvent(Event $event)
+    {
+        return view('admin.events.show', compact('event'));
+    }
+
+    /**
+     * Display all coaching sessions.
+     */
+    public function coachingSessions()
+    {
+        $sessions = CoachingSession::with('coach')->latest()->get();
+        return view('admin.coaching.index', compact('sessions'));
+    }
+
+    /**
+     * Show the form to create a new coaching session.
+     */
+    public function createCoachingSession()
+    {
+        $coaches = User::where('role', 'coach')->get();
+        return view('admin.coaching.create', compact('coaches'));
+    }
+
+    /**
+     * Store a new coaching session and notify students.
+     */
+    public function storeCoachingSession(Request $request)
+    {
+        $request->validate([
+            'topic' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type' => 'nullable|string',
+            'developer_type' => 'required|in:fresher,professional',
+            'coach_id' => 'required|exists:users,id',
+            'session_date' => 'required|date',
+            'start_time' => 'required',
+            'capacity' => 'required|integer|min:1',
+            'status' => 'required|in:upcoming,completed,cancelled',
+        ]);
+
+        $session = CoachingSession::create($request->all());
+
+        // Notify all students
+        $students = User::where('role', 'student')->get();
+        foreach ($students as $student) {
+            Notification::create([
+                'user_id' => $student->id,
+                'type' => 'coaching',
+                'message' => "New coaching session created: {$session->topic} on {$session->session_date->format('F d, Y')}",
+            ]);
+        }
+
+        return redirect()->route('admin.coaching.index')->with('success', 'Coaching session created successfully.');
+    }
+
+    /**
+     * Display all services.
+     */
+    public function services()
+    {
+        $services = Service::latest()->get();
+        return view('admin.services.index', compact('services'));
+    }
+
+    /**
+     * Show the form to create a new service.
+     */
+    public function createService()
+    {
+        return view('admin.services.create');
+    }
+
+    /**
+     * Store a new service.
+     */
+    public function storeService(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'icon' => 'required|string',
+        ]);
+
+        Service::create($request->all());
+
+        return redirect()->route('admin.services.index')->with('success', 'Service created successfully.');
+    }
+
+    /**
+     * Show the form to edit a service.
+     */
+    public function editService(Service $service)
+    {
+        return view('admin.services.edit', compact('service'));
+    }
+
+    /**
+     * Update a service.
+     */
+    public function updateService(Request $request, Service $service)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'icon' => 'required|string',
+        ]);
+
+        $service->update($request->all());
+
+        return redirect()->route('admin.services.index')->with('success', 'Service updated successfully.');
+    }
+
+    /**
+     * Delete a service.
+     */
+    public function destroyService(Service $service)
+    {
+        $service->delete();
+        return redirect()->route('admin.services.index')->with('success', 'Service deleted successfully.');
     }
 }
