@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CoachingSession;
 use App\Models\Booking;
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,11 @@ class CoachingController extends Controller
             return view('admin.coaching.index', compact('sessions'));
         }
 
-        $sessions = CoachingSession::where('status', 'upcoming')->with('coach')->latest()->get();
+        $sessions = CoachingSession::where('status', 'upcoming')
+            ->with('coach')
+            ->latest()
+            ->get();
+
         return view('coaching.index', compact('sessions'));
     }
 
@@ -39,6 +44,7 @@ class CoachingController extends Controller
             'topic' => 'required|string|max:255',
             'description' => 'nullable|string',
             'type' => 'nullable|string|max:255',
+            'developer_type' => 'required|string|in:fresher,professional',
             'coach_id' => 'required|exists:users,id',
             'session_date' => 'required|date|after:now',
             'start_time' => 'required|date_format:H:i',
@@ -46,10 +52,11 @@ class CoachingController extends Controller
             'status' => 'nullable|string|in:upcoming,completed,cancelled',
         ]);
 
-        CoachingSession::create([
+        $session = CoachingSession::create([
             'topic' => $request->topic,
             'description' => $request->description,
             'type' => $request->type,
+            'developer_type' => $request->developer_type,
             'coach_id' => $request->coach_id,
             'session_date' => $request->session_date,
             'start_time' => $request->start_time,
@@ -59,6 +66,17 @@ class CoachingController extends Controller
             'created_by' => Auth::id(),
             'user_id' => Auth::id(),
         ]);
+
+        // Notify all students
+        $students = User::where('role', 'student')->get();
+        foreach ($students as $student) {
+            Notification::create([
+                'user_id' => $student->id,
+                'type' => 'coaching',
+                'message' => "New coaching session created: {$session->topic} on {$session->session_date->format('F d, Y')}",
+                'is_read' => false,
+            ]);
+        }
 
         return redirect()->route('admin.coaching.index')->with('success', __('messages.coaching_created'));
     }
@@ -102,7 +120,7 @@ class CoachingController extends Controller
             return redirect()->route('coaching.index')->with('error', __('messages.already_booked'));
         }
 
-        Booking::create([
+        $booking = Booking::create([
             'user_id' => Auth::id(),
             'bookable_id' => $session->id,
             'bookable_type' => CoachingSession::class,
@@ -111,6 +129,17 @@ class CoachingController extends Controller
             'email' => $request->email,
             'question' => $request->question,
         ]);
+
+        // Notify all admins
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => 'coaching_booking',
+                'message' => "New booking for coaching session: {$session->topic} by " . Auth::user()->name,
+                'is_read' => false,
+            ]);
+        }
 
         return redirect()->route('dashboard')->with('success', __('messages.coaching_booked'));
     }
