@@ -69,7 +69,8 @@
     <main>
         @yield('content')
     </main>
-   <!-- ─────── Footer ─────── -->
+
+    <!-- ─────── Footer ─────── -->
 @if (!request()->is('admin/*'))
 <footer class="bg-dark text-white pt-4">
     <div class="container">
@@ -103,6 +104,7 @@
 </footer>
 @endif
 
+   
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
