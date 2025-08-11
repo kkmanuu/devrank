@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class CoachingSession extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
     protected $fillable = [
         'topic',
         'description',
         'type',
+        'developer_type', // Added new field
         'coach_id',
         'session_date',
         'start_time',
@@ -45,5 +46,10 @@ class CoachingSession extends Model
     public function availableSlots()
     {
         return $this->capacity - $this->bookings()->count();
+    }
+
+    public function getDeveloperTypeDisplayAttribute()
+    {
+        return ucfirst($this->developer_type) . ' Developer';
     }
 }
