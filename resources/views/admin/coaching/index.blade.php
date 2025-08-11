@@ -33,6 +33,21 @@
             margin-bottom: 20px;
             float: right;
         }
+        .developer-type-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.8rem;
+        }
+        .card {
+            position: relative;
+        }
+        .badge-fresher {
+            background-color: #007bff !important;
+        }
+        .badge-professional {
+            background-color: #28a745 !important;
+        }
     </style>
 
     <div class="content">
@@ -50,13 +65,28 @@
         @if($sessions->isEmpty())
             <p>No coaching sessions available yet.</p>
         @else
+            <!-- Filter Buttons -->
+            <div class="mb-4">
+                <button class="btn btn-outline-light me-2 filter-btn active" data-filter="all">All Sessions</button>
+                <button class="btn btn-outline-light me-2 filter-btn" data-filter="fresher">Fresher Developer</button>
+                <button class="btn btn-outline-light me-2 filter-btn" data-filter="professional">Professional Developer</button>
+            </div>
+
             <div class="row g-4">
                 @foreach($sessions as $session)
-                    <div class="col-md-4">
+                    <div class="col-md-4 session-card" data-type="{{ $session->developer_type ?? 'fresher' }}">
                         <div class="card p-3">
+                            <span class="badge developer-type-badge badge-{{ $session->developer_type ?? 'fresher' }}">
+                                {{ ucfirst($session->developer_type ?? 'fresher') }} Level
+                            </span>
                             <h5 class="card-title">{{ $session->topic }}</h5>
                             <p><strong>Description:</strong> {{ Str::limit($session->description, 100) ?? 'N/A' }}</p>
                             <p><strong>Type:</strong> {{ $session->type ?? 'N/A' }}</p>
+                            <p><strong>Developer Level:</strong> 
+                                <span class="badge badge-{{ $session->developer_type ?? 'fresher' }}">
+                                    {{ ucfirst($session->developer_type ?? 'fresher') }} Developer
+                                </span>
+                            </p>
                             <p><strong>Coach:</strong> {{ $session->coach->name ?? 'Not Assigned' }}</p>
                             <p><strong>Date:</strong> {{ $session->session_date->format('F d, Y') }}</p>
                             <p><strong>Time:</strong> {{ $session->start_time }}</p>
@@ -69,4 +99,46 @@
             </div>
         @endif
     </div>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const sessionCards = document.querySelectorAll('.session-card');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+                    
+                    // Update active button
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Filter sessions
+                    sessionCards.forEach(card => {
+                        const cardType = card.getAttribute('data-type');
+                        if (filter === 'all' || cardType === filter) {
+                            card.style.display = 'block';
+                            card.style.animation = 'fadeIn 0.5s ease-in';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+
+    <style>
+        .filter-btn.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: #fff;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    @endpush
 @endsection
