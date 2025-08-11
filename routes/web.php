@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\{
     HomeController,
     DashboardController,
@@ -13,20 +12,17 @@ use App\Http\Controllers\{
     MessageController,
     ProfileController,
     ServiceController,
-    ContactMessageController
+    ContactMessageController,
+    NotificationController
 };
 
-// ----------------------
 // Public pages
-// ----------------------
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/services', [HomeController::class, 'services'])->name('services');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 
-// ----------------------
 // Language switcher
-// ----------------------
 Route::get('/set-locale/{locale}', function ($locale) {
     if (in_array($locale, ['en', 'sw'])) {
         session(['locale' => $locale]);
@@ -35,9 +31,7 @@ Route::get('/set-locale/{locale}', function ($locale) {
     return redirect()->back();
 })->name('setLocale');
 
-// ----------------------
-// Authenticated routes (students & admins)
-// ----------------------
+// Authenticated routes (students, admins, coaches)
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'studentDashboard'])->name('dashboard');
 
@@ -49,59 +43,53 @@ Route::middleware('auth')->group(function () {
     Route::post('/submit-project', [ProjectController::class, 'store'])->name('project.store');
     Route::get('/submissions/{submission}', [ProjectController::class, 'show'])->name('submission.show');
 
-   
     Route::get('/events', [EventController::class, 'index'])->name('events.index');
     Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
     Route::post('/events/{event}/book', [EventController::class, 'book'])->name('events.book');
-  
+
     Route::get('/coaching', [CoachingController::class, 'index'])->name('coaching.index');
-Route::get('/coaching/{session}', [CoachingController::class, 'show'])->name('coaching.show');
-Route::get('/coaching/{session}/book', [CoachingController::class, 'showBookingForm'])->name('coaching.book.form');
-Route::post('/coaching/{session}/book', [CoachingController::class, 'book'])->name('coaching.book');
-
-
+    Route::get('/coaching/{session}', [CoachingController::class, 'show'])->name('coaching.show');
+    Route::get('/coaching/{session}/book', [CoachingController::class, 'showBookingForm'])->name('coaching.book.form');
+    Route::post('/coaching/{session}/book', [CoachingController::class, 'book'])->name('coaching.book');
 
     Route::post('/payment', [PaymentController::class, 'initiate'])->name('payment.initiate');
     Route::get('/payment/required', fn () => view('payment.required'))->name('payment.required');
 
     Route::post('/contact', [ContactMessageController::class, 'store'])->name('contact.store');
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
-    
 
-    Route::get('/contact', [ContactMessageController::class, 'index'])->name('contact');
-Route::post('/contact', [ContactMessageController::class, 'submit'])->name('contact.submit');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
+    Route::patch('/notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 });
 
-// ----------------------
-// Admin-only routes
-// ----------------------
-Route::middleware(['auth', 'role:admin'])
-    ->prefix('admin')
-    ->as('admin.')
-    ->group(function () {
+// Admin-only routes with proper prefix & name grouping
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(function () {
+    // Redirect /admin to /admin/dashboard
+    Route::get('/', function () {
+        return redirect()->route('admin.dashboard');
+    })->name('home');
 
     Route::get('/dashboard', [AdminController::class, 'adminDashboard'])->name('dashboard');
 
-    Route::get('/submissions', [DashboardController::class, 'manageSubmissions'])->name('submissions');
-    Route::get('/users', [DashboardController::class, 'manageUsers'])->name('users');
-    Route::get('/payments', [DashboardController::class, 'managePayments'])->name('payments');
-    Route::get('/messages', [DashboardController::class, 'manageMessages'])->name('messages');
-    Route::post('/submissions/{submission}/review', [AdminController::class, 'review'])->name('review');
-   
-
-    Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
-    Route::post('/events', [EventController::class, 'store'])->name('events.store');
-    Route::get('/events', [EventController::class, 'index'])->name('events.index');
-    Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
-
+    Route::get('/users', [AdminController::class, 'users'])->name('users');
     Route::get('/users/create', [AdminController::class, 'createUser'])->name('users.create');
     Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
 
+    Route::get('/submissions', [AdminController::class, 'submissions'])->name('submissions');
+    Route::post('/submissions/{submission}/review', [AdminController::class, 'review'])->name('submissions.review');
+
+    Route::get('/payments', [AdminController::class, 'payments'])->name('payments');
+
+    Route::get('/events', [EventController::class, 'index'])->name('events.index');
+    Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+    Route::post('/events', [EventController::class, 'store'])->name('events.store');
+    Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+
+    Route::get('/coaching', [CoachingController::class, 'index'])->name('coaching.index');
     Route::get('/coaching/create', [CoachingController::class, 'create'])->name('coaching.create');
     Route::post('/coaching', [CoachingController::class, 'store'])->name('coaching.store');
-    Route::get('/coaching', [CoachingController::class, 'index'])->name('coaching.index');
 
-    // ✅ Services CRUD routes
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
     Route::get('/services/create', [ServiceController::class, 'create'])->name('services.create');
     Route::post('/services', [ServiceController::class, 'store'])->name('services.store');
@@ -111,15 +99,15 @@ Route::middleware(['auth', 'role:admin'])
 
     Route::get('/contact-messages', [ContactMessageController::class, 'adminIndex'])->name('contact-messages.index');
     Route::patch('/contact-messages/{contactMessage}/mark-as-read', [ContactMessageController::class, 'markAsRead'])->name('contact-messages.markAsRead');
+    Route::post('/contact-messages/{contactMessage}/reply', [AdminController::class, 'replyMessage'])->name('contact-messages.reply');
     Route::delete('/contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
+    Route::patch('/notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 });
 
-// ----------------------
 // M-PESA callback route
-// ----------------------
 Route::post('/mpesa/callback', [PaymentController::class, 'callback'])->name('mpesa.callback');
 
-// ----------------------
-// Laravel Breeze or Fortify Auth routes
-// ----------------------
 require __DIR__.'/auth.php';
