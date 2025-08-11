@@ -69,38 +69,40 @@
     <main>
         @yield('content')
     </main>
-
-    <!-- ─────── Footer ─────── -->
-    <footer class="bg-dark text-white pt-4">
-        <div class="container">
-            <div class="row">
-                <!-- About -->
-                <div class="col-md-4 mb-3">
-                    <h5>About DevRank</h5>
-                    <p>We empower student developers with structured project reviews, personalized coaching, and expert feedback.</p>
-                </div>
-                <!-- Quick Links -->
-                <div class="col-md-4 mb-3">
-                    <h5>Quick Links</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="{{ route('about') }}" class="text-white-50 text-decoration-none">About Us</a></li>
-                        <li><a href="{{ route('services') }}" class="text-white-50 text-decoration-none">Services</a></li>
-                        <li><a href="{{ route('contact') }}" class="text-white-50 text-decoration-none">Contact</a></li>
-                    </ul>
-                </div>
-                <!-- Connect With Us -->
-                <div class="col-md-4 mb-3">
-                    <h5>Connect With Us</h5>
-                    <a href="#" class="text-white me-3" aria-label="Facebook"><i class="bi bi-facebook fs-4"></i></a>
-                    <a href="#" class="text-white me-3" aria-label="Twitter"><i class="bi bi-twitter fs-4"></i></a>
-                    <a href="#" class="text-white" aria-label="LinkedIn"><i class="bi bi-linkedin fs-4"></i></a>
-                </div>
+   <!-- ─────── Footer ─────── -->
+@if (!request()->is('admin/*'))
+<footer class="bg-dark text-white pt-4">
+    <div class="container">
+        <div class="row">
+            <!-- About -->
+            <div class="col-md-4 mb-3">
+                <h5>About DevRank</h5>
+                <p>We empower student developers with structured project reviews, personalized coaching, and expert feedback.</p>
             </div>
-            <div class="text-center py-3 border-top border-secondary">
-                <small>&copy; {{ date('Y') }} DevRank. All rights reserved.</small>
+            <!-- Quick Links -->
+            <div class="col-md-4 mb-3">
+                <h5>Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{{ route('about') }}" class="text-white-50 text-decoration-none">About Us</a></li>
+                    <li><a href="{{ route('services') }}" class="text-white-50 text-decoration-none">Services</a></li>
+                    <li><a href="{{ route('contact') }}" class="text-white-50 text-decoration-none">Contact</a></li>
+                </ul>
+            </div>
+            <!-- Connect With Us -->
+            <div class="col-md-4 mb-3">
+                <h5>Connect With Us</h5>
+                <a href="#" class="text-white me-3" aria-label="Facebook"><i class="bi bi-facebook fs-4"></i></a>
+                <a href="#" class="text-white me-3" aria-label="Twitter"><i class="bi bi-twitter fs-4"></i></a>
+                <a href="#" class="text-white" aria-label="LinkedIn"><i class="bi bi-linkedin fs-4"></i></a>
             </div>
         </div>
-    </footer>
+        <div class="text-center py-3 border-top border-secondary">
+            <small>&copy; {{ date('Y') }} DevRank. All rights reserved.</small>
+        </div>
+    </div>
+</footer>
+@endif
+
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
