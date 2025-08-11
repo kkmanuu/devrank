@@ -7,8 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Submission extends Model
 {
-    use HasFactory;
-     protected $fillable = ['project_id', 'score', 'status'];
+    protected $fillable = ['user_id', 'project_id', 'score', 'status', 'feedback_id'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function project()
     {
@@ -17,6 +21,12 @@ class Submission extends Model
 
     public function feedback()
     {
-        return $this->hasOne(Feedback::class);
+        return $this->belongsTo(Feedback::class);
+    }
+
+    public function rubricScores()
+    {
+        return $this->hasMany(RubricScore::class);
     }
 }
+?>
