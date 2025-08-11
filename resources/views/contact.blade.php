@@ -58,7 +58,7 @@
             <!-- Contact Form -->
             <div class="col-md-6">
                 <div class="contact-form p-4 bg-dark rounded-3 shadow-lg scale-up delay-1">
-                    <form action="{{ route('contact.submit') }}" method="POST">
+                    <form action="{{ route('contact.store') }}" method="POST">
                         @csrf
                         <div class="mb-3">
                             <label for="name" class="form-label text-white">Name</label>
