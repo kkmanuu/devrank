@@ -13,7 +13,16 @@ class ContactMessage extends Model
         'name',
         'email',
         'company',
+        'type',
         'message',
+        'user_id',
         'is_read',
+        'reply', // add if you are storing admin replies
     ];
+
+    // Relationship to the user who sent the message
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
