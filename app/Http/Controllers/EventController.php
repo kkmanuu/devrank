@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\Booking;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -16,16 +18,11 @@ class EventController extends Controller
         $this->middleware('role:admin')->only(['create', 'store']);
     }
 
-
     public function welcome()
-{
-    $events = Event::where('status', 'upcoming')
-                   ->orderBy('event_date')
-                   ->take(6)
-                   ->get();
-
-    return view('events.welcome', compact('events'));
-}
+    {
+        $events = Event::where('status', 'upcoming')->orderBy('event_date')->take(6)->get();
+        return view('events.welcome', compact('events'));
+    }
 
     public function index()
     {
@@ -64,7 +61,7 @@ class EventController extends Controller
             ? $request->file('image')->store('uploads/events', 'public')
             : null;
 
-        Event::create([
+        $event = Event::create([
             'title' => $request->title,
             'description' => $request->description,
             'agenda' => $request->agenda,
@@ -77,6 +74,17 @@ class EventController extends Controller
             'image' => $imagePath,
             'created_by' => Auth::id(),
         ]);
+
+        // Notify all students
+        $students = User::where('role', 'student')->get();
+        foreach ($students as $student) {
+            Notification::create([
+                'user_id' => $student->id,
+                'type' => 'event',
+                'message' => "New event created: {$event->title} on {$event->event_date->format('F d, Y')}",
+                'is_read' => false,
+            ]);
+        }
 
         return redirect()->route('admin.events.index')->with('success', __('messages.event_created'));
     }
@@ -108,12 +116,23 @@ class EventController extends Controller
             return redirect()->route('events.index')->with('error', __('messages.already_booked'));
         }
 
-        Booking::create([
+        $booking = Booking::create([
             'user_id' => Auth::id(),
             'bookable_id' => $event->id,
             'bookable_type' => Event::class,
             'status' => 'confirmed',
         ]);
+
+        // Notify all admins
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => 'event_booking',
+                'message' => "New booking for event: {$event->title} by " . Auth::user()->name,
+                'is_read' => false,
+            ]);
+        }
 
         return redirect()->route('dashboard')->with('success', __('messages.event_booked'));
     }
