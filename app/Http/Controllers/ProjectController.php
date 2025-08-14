@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\Submission;
 use App\Models\Feedback;
-use App\Models\Rubric;
-use App\Models\RubricScore;
 use App\Models\Badge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -82,82 +80,55 @@ class ProjectController extends Controller
         return view('projects.show', compact('submission'));
     }
 
-    protected function evaluateSubmission(Submission $submission)
-    {
-        $rubrics = Rubric::all();
-        $totalScore = 0;
-        $feedbackComments = [];
-        $rubricScores = [];
+   protected function evaluateSubmission(Submission $submission)
+{
+    $totalScore = 0;
+    $feedbackComments = [];
 
-        // Fetch GitHub repository content (simplified; assumes public repo)
-        $githubUrl = $submission->project->github_url;
-        $repoContent = $this->fetchGitHubContent($githubUrl);
+    // Fetch GitHub repository content (simplified; assumes public repo)
+    $githubUrl = $submission->project->github_url;
+    $repoContent = $this->fetchGitHubContent($githubUrl);
 
-        foreach ($rubrics as $rubric) {
-            // Call GPT API for each rubric criterion
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
-                'Content-Type' => 'application/json',
-            ])->post('https://api.openai.com/v1/chat/completions', [
-                'model' => 'gpt-4',
-                'messages' => [
-                    [
-                        'role' => 'system',
-                        'content' => "You are an expert code reviewer. Evaluate the following code based on the criterion: {$rubric->criterion}. Description: {$rubric->description}. Provide a score out of 10 and detailed comments on what was done well and what needs improvement in JSON format: {\"score\": number, \"correct\": \"string\", \"incorrect\": \"string\"}."
-                    ],
-                    [
-                        'role' => 'user',
-                        'content' => "Code: {$repoContent}"
-                    ]
-                ],
-                'max_tokens' => 500,
-            ]);
+    // Call AI for a general code review
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+        'Content-Type' => 'application/json',
+    ])->post('https://api.openai.com/v1/chat/completions', [
+        'model' => 'gpt-4',
+        'messages' => [
+            [
+                'role' => 'system',
+                'content' => "You are an expert code reviewer. Evaluate the following code and provide a score out of 10, along with the errors and corrections in JSON format: {\"score\": number, \"errors\": \"string\", \"corrections\": \"string\"}."
+            ],
+            [
+                'role' => 'user',
+                'content' => "Code: {$repoContent}"
+            ]
+        ],
+        'max_tokens' => 500,
+    ]);
 
-            if ($response->successful()) {
-                $result = $response->json()['choices'][0]['message']['content'];
-                $parsed = json_decode($result, true) ?: ['score' => 5, 'correct' => 'N/A', 'incorrect' => 'N/A'];
-                $score = $parsed['score'] * $rubric->weight / 10;
-                $totalScore += $score;
-
-                $rubricScores[] = [
-                    'submission_id' => $submission->id,
-                    'rubric_id' => $rubric->id,
-                    'score' => $parsed['score'],
-                    'comments' => "Correct: {$parsed['correct']}\nIncorrect: {$parsed['incorrect']}",
-                ];
-
-                $feedbackComments[] = "{$rubric->criterion}: {$parsed['correct']}\nAreas for Improvement: {$parsed['incorrect']}";
-            } else {
-                $rubricScores[] = [
-                    'submission_id' => $submission->id,
-                    'rubric_id' => $rubric->id,
-                    'score' => 5,
-                    'comments' => 'Error: Unable to fetch AI review.',
-                ];
-                $feedbackComments[] = "{$rubric->criterion}: Error in AI review.";
-            }
-        }
-
-        // Save feedback
-        $feedback = Feedback::create([
-            'submission_id' => $submission->id,
-            'content' => implode("\n\n", $feedbackComments),
-            'correct' => 'See rubric scores for details.',
-            'incorrect' => 'See rubric scores for details.',
-        ]);
-
-        // Save rubric scores
-        foreach ($rubricScores as $score) {
-            RubricScore::create($score);
-        }
-
-        // Update submission
-        $submission->update([
-            'score' => min($totalScore, 100),
-            'status' => 'reviewed',
-            'feedback_id' => $feedback->id,
-        ]);
+    $parsed = ['score' => 5, 'errors' => 'N/A', 'corrections' => 'N/A'];
+    if ($response->successful()) {
+        $result = $response->json()['choices'][0]['message']['content'];
+        $parsed = json_decode($result, true) ?: $parsed;
     }
+
+    // Save feedback
+    $feedback = Feedback::create([
+        'submission_id' => $submission->id,
+        'content' => "Errors:\n{$parsed['errors']}\n\nCorrections:\n{$parsed['corrections']}",
+        'correct' => $parsed['corrections'],
+        'incorrect' => $parsed['errors'],
+    ]);
+
+    // Update submission
+    $submission->update([
+        'score' => min($parsed['score'], 100),
+        'status' => 'reviewed',
+        'feedback_id' => $feedback->id,
+    ]);
+}
 
     protected function fetchGitHubContent($url)
     {

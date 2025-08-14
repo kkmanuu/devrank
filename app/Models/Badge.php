@@ -9,6 +9,8 @@ class Badge extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['name'];
+
     // Many-to-many relationship with User
     public function users()
     {

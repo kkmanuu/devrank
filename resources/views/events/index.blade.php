@@ -3,9 +3,7 @@
 @section('title', 'DevRank - Upcoming Events')
 
 @section('content')
-
-<!-- Hero Section -->
-<section class="hero-section position-relative d-flex align-items-center text-white" style="height: 70vh; overflow: hidden;">
+<div class="hero-section position-relative d-flex align-items-center text-white" style="height: 70vh; overflow: hidden;">
     <div class="slider-container position-absolute w-100 h-100" style="z-index: 0;">
         <div class="slider-track">
             <div class="slide" style="background-image: url('{{ asset('images/techss.jpg') }}');"></div>
@@ -13,7 +11,7 @@
             <div class="slide" style="background-image: url('{{ asset('images/deve.jpg') }}');"></div>
         </div>
     </div>
-    <div class="overlay position-absolute w-100 h-100" style="background: linear-gradient(135deg, rgba(0, 98, 255, 0.6), rgba(0, 0, 0, 0.7)); z-index: 1;"></div>
+    
     <div class="container text-center position-relative z-2 py-5">
         <h1 class="display-3 fw-bold slide-in">Discover Upcoming Events</h1>
         <p class="lead mb-4 slide-in delay-1">Join our vibrant community to learn, network, and elevate your developer skills.</p>
@@ -21,9 +19,8 @@
             <i class="bi bi-calendar-event me-2"></i>Explore Events
         </a>
     </div>
-</section>
+</div>
 
-<!-- Mission Section -->
 <section class="py-5 mission-section text-white" style="background-color: #2c3e50;">
     <div class="container">
         <div class="section-header text-center mb-5">
@@ -38,7 +35,6 @@
     </div>
 </section>
 
-<!-- What We Offer Section -->
 <section class="py-5 offer-section" style="background-color: #e6f0fa;">
     <div class="container">
         <div class="section-header text-center mb-5">
@@ -79,7 +75,6 @@
     </div>
 </section>
 
-<!-- Events Section -->
 <section id="events" class="py-5 events-section" style="background-color: #fff8e1;">
     <div class="container">
         <div class="section-header text-center mb-5">
@@ -131,7 +126,11 @@
                                     </li>
                                     <li class="mb-2">
                                         <i class="bi bi-clock text-primary me-2"></i>
-                                        <strong>Time:</strong> {{ $event->start_time }}
+                                        <strong>Time:</strong> {{ \Carbon\Carbon::parse($event->start_time)->format('h:i A') }}
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="bi bi-currency-exchange text-primary me-2"></i>
+                                        <strong>Price:</strong> {{ number_format($event->amount, 2) }} KES
                                     </li>
                                     <li>
                                         <i class="bi bi-people-fill text-primary me-2"></i>
@@ -140,12 +139,9 @@
                                 </ul>
                                 <div class="mt-auto d-flex justify-content-between align-items-center">
                                     <a href="{{ route('events.show', $event) }}" class="btn btn-outline-primary btn-sm px-4">View Details</a>
-                                    <form action="{{ route('events.book', $event) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-primary btn-sm px-4" {{ $event->availableSlots() <= 0 || $event->status !== 'upcoming' ? 'disabled' : '' }}>
-                                            Book Now
-                                        </button>
-                                    </form>
+                                    <a href="{{ route('events.bookForm', $event) }}" class="btn btn-primary btn-sm px-4" {{ $event->availableSlots() <= 0 || $event->status !== 'upcoming' ? 'disabled' : '' }}>
+                                        Book Now
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -155,8 +151,6 @@
         @endif
     </div>
 </section>
-
-@endsection
 
 @push('styles')
 <style>
@@ -180,7 +174,6 @@
         background-color: #f5f5f5;
     }
 
-    /* Hero Section */
     .hero-section h1 {
         font-size: 3.5rem;
         letter-spacing: -1px;
@@ -195,7 +188,6 @@
         opacity: 0.95;
     }
 
-    /* Slider Animation */
     .slider-container {
         width: 100%;
         height: 100%;
@@ -228,7 +220,6 @@
         100% { transform: translateX(-100%); }
     }
 
-    /* Mission Section */
     .mission-section .divider {
         width: 100px;
         height: 4px;
@@ -236,7 +227,6 @@
         background-color: #ffffff;
     }
 
-    /* Offer Section */
     .offer-section .card {
         transition: transform 0.4s ease, box-shadow 0.4s ease;
         border-radius: 12px;
@@ -257,7 +247,6 @@
         margin: 0 auto;
     }
 
-    /* Events Section */
     .events-section .card {
         transition: transform 0.4s ease, box-shadow 0.4s ease;
         border-radius: 12px;
@@ -272,7 +261,6 @@
         padding: 1.5rem;
     }
 
-    /* Buttons */
     .btn-primary {
         background-color: var(--primary);
         border-color: var(--primary);
@@ -288,6 +276,12 @@
         border-color: #0052d9;
         transform: translateY(-3px);
         box-shadow: 0 5px 15px rgba(0, 98, 255, 0.3);
+    }
+
+    .btn-primary:disabled {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        cursor: not-allowed;
     }
 
     .btn-outline-primary {
@@ -311,7 +305,6 @@
         font-size: 1.25rem;
     }
 
-    /* Badges */
     .badge {
         font-weight: 700;
         letter-spacing: 1px;
@@ -321,7 +314,6 @@
         border-radius: 6px;
     }
 
-    /* Empty State */
     .empty-state {
         max-width: 600px;
         margin: 0 auto;
@@ -336,7 +328,6 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
-    /* Animations */
     .fade-in {
         opacity: 0;
         animation: fadeIn 1.2s ease-in-out forwards;
@@ -366,7 +357,6 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Responsive Adjustments */
     @media (max-width: 1200px) {
         .hero-section h1 {
             font-size: 3rem;
@@ -421,3 +411,4 @@
     }
 </style>
 @endpush
+@endsection

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
-   use HasFactory;
+    use HasFactory;
 
     protected $fillable = [
         'title',
@@ -21,11 +21,13 @@ class Event extends Model
         'created_by',
         'status',
         'location',
+        'amount',
+        'capacity',
     ];
 
     protected $casts = [
         'event_date' => 'date',
-        'faqs' => 'array', // Cast faqs as array for JSON handling
+        'faqs' => 'array',
     ];
 
     public function creator()
@@ -40,16 +42,19 @@ class Event extends Model
 
     public function availableSlots()
     {
-        return 50 - $this->bookings()->count();
+        return $this->capacity - $this->bookings()->count();
+    }
+
+    public function payments()
+    {
+        return $this->morphMany(Payment::class, 'payable');
     }
 
     public function users()
-{
-    return $this->belongsToMany(User::class, 'bookings', 'bookable_id', 'user_id')
-        ->wherePivot('bookable_type', self::class)
-        ->withTimestamps()
-        ->withPivot('participated'); // Let Laravel know this pivot column exists
-}
-
-
+    {
+        return $this->belongsToMany(User::class, 'bookings', 'bookable_id', 'user_id')
+            ->wherePivot('bookable_type', self::class)
+            ->withTimestamps()
+            ->withPivot('participated');
+    }
 }

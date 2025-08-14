@@ -56,6 +56,8 @@
     <!-- Navbar -->
     @include('layouts.navigation')
 
+
+
     <!-- Page Heading (optional) -->
     @hasSection('header')
         <header class="bg-white shadow-sm mb-4">
@@ -103,6 +105,8 @@
     </div>
 </footer>
 @endif
+
+
 
    
 

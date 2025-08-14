@@ -2,190 +2,405 @@
 
 @section('content')
 <style>
+    :root {
+        --primary-color: #0ff;
+        --secondary-color: #8a2be2;
+        --accent-color: #00cccc;
+        --dark-bg: #0f1419;
+        --card-bg: rgba(255, 255, 255, 0.08);
+        --text-primary: #ffffff;
+        --text-secondary: #b0bec5;
+        --success-color: #4caf50;
+        --warning-color: #ff9800;
+        --danger-color: #f44336;
+    }
+
     body {
         font-family: 'Inter', 'Segoe UI', sans-serif;
-        background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-        color: #fff;
+        background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #2d3748 100%);
+        color: var(--text-primary);
         margin: 0;
         overflow-x: hidden;
+        min-height: 100vh;
     }
+
     /* Custom Scrollbar */
     ::-webkit-scrollbar {
-        width: 6px;
+        width: 8px;
     }
     ::-webkit-scrollbar-track {
         background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
+        border-radius: 10px;
     }
     ::-webkit-scrollbar-thumb {
-        background: linear-gradient(45deg, #0ff, #8a2be2);
-        border-radius: 8px;
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        border-radius: 10px;
     }
+
+    /* Sidebar Styling */
     .sidebar {
         min-height: 100vh;
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
+        background: rgba(15, 20, 25, 0.95);
+        backdrop-filter: blur(20px);
         border-right: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 15px;
-        width: 200px;
+        padding: 20px;
+        width: 260px;
         position: sticky;
         top: 0;
+        transition: all 0.3s ease;
     }
+
+    .sidebar .brand {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        text-decoration: none;
+    }
+
+    .sidebar .brand span {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
     .sidebar .nav-link {
-        color: #b0bec5;
+        color: var(--text-secondary);
         font-weight: 500;
-        font-size: 0.9rem;
-        border-radius: 6px;
-        padding: 8px 12px;
+        font-size: 0.95rem;
+        border-radius: 12px;
+        padding: 12px 16px;
         margin-bottom: 8px;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        text-decoration: none;
     }
+
+    .sidebar .nav-link:hover {
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(0, 255, 255, 0.3);
+        transform: translateX(4px);
+    }
+
     .sidebar .nav-link.active {
-        background: linear-gradient(45deg, #0ff, #8a2be2);
-        color: #fff;
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(138, 43, 226, 0.15));
+        color: var(--text-primary);
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 15px rgba(0, 255, 255, 0.2);
     }
+
     .sidebar .nav-link i {
-        margin-right: 8px;
+        margin-right: 12px;
+        width: 20px;
+        text-align: center;
     }
+
+    /* Main Content */
     .content {
-        padding: 20px;
+        padding: 30px;
         width: 100%;
     }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 2rem;
+    }
+
+    /* Enhanced Cards */
     .card {
-        background: linear-gradient(135deg, rgba(30, 60, 114, 0.8), rgba(42, 82, 152, 0.8));
+        background: var(--card-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
         color: white;
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-        backdrop-filter: blur(6px);
-    }
-    .card-header {
-        background: linear-gradient(45deg, #0ff, #8a2be2);
-        padding: 8px 15px;
-        border-radius: 10px 10px 0 0;
-        margin: -1px;
-    }
-    .card-title {
-        font-size: 1rem;
-        font-weight: 600;
-        margin: 0;
-    }
-    .card-body {
-        padding: 15px;
-    }
-    .btn-custom {
-        background: linear-gradient(45deg, #0ff, #8a2be2);
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 6px 12px;
-        font-size: 0.85rem;
-    }
-    .btn-custom:hover {
-        background: linear-gradient(45deg, #00cccc, #6a0dad);
-    }
-    .chart-container {
-        background: rgba(255,255,255,0.05);
-        padding: 15px;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
         backdrop-filter: blur(10px);
     }
-    .chart-container canvas {
-        max-height: 200px;
+
+    .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
     }
-    .notification-card {
-        background: rgba(255,255,255,0.05);
-        border-radius: 8px;
-        padding: 12px;
-        margin-bottom: 12px;
+
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 255, 255, 0.15);
+        border-color: rgba(0, 255, 255, 0.3);
     }
-    .notification-card.unread {
-        border-left: 3px solid #0ff;
+
+    .card-header {
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(138, 43, 226, 0.1));
+        border: none;
+        padding: 20px;
+        border-radius: 16px 16px 0 0 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .notification-card p {
-        font-size: 0.85rem;
-        margin: 0 0 5px;
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text-primary);
     }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    /* Progress Rings */
     .progress-ring {
         position: relative;
-        width: 70px;
-        height: 70px;
-        margin: 10px auto;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
     }
+
+    .progress-ring svg {
+        transform: rotate(-90deg);
+        width: 100%;
+        height: 100%;
+    }
+
     .progress-ring circle {
         fill: none;
         stroke-width: 6;
         stroke-linecap: round;
-        transform: rotate(-90deg);
-        transform-origin: 50% 50%;
     }
+
     .progress-ring .bg {
-        stroke: rgba(255,255,255,0.1);
+        stroke: rgba(255, 255, 255, 0.1);
     }
+
     .progress-ring .fg {
         stroke: url(#progressGradient);
-        stroke-dasharray: 188;
-        stroke-dashoffset: calc(188 - (188 * var(--progress)) / 100);
+        stroke-dasharray: 251.2;
+        stroke-dashoffset: calc(251.2 - (251.2 * var(--progress)) / 100);
+        transition: stroke-dashoffset 1s ease-in-out;
     }
-    .coach-profile-img {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid #0ff;
-        margin-right: 8px;
-    }
-    h1 {
-        font-size: 1.5rem;
+
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--text-primary);
     }
-    h3 {
-        font-size: 1.2rem;
+
+    /* Buttons */
+    .btn-custom {
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
         font-weight: 600;
-        margin-bottom: 15px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
     }
-    p {
+
+    .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 255, 255, 0.3);
+        color: white;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.875rem;
+    }
+
+    /* Notifications */
+    .notification-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        border-left: 4px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .notification-card.unread {
+        border-left-color: var(--primary-color);
+        background: rgba(0, 255, 255, 0.08);
+    }
+
+    .notification-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .notification-card p {
+        margin: 0 0 8px 0;
         font-size: 0.9rem;
     }
+
+    .notification-card p:last-child {
+        margin-bottom: 0;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+
+    /* Charts Container */
+    .chart-container {
+        background: var(--card-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        backdrop-filter: blur(10px);
+    }
+
+    .chart-container h5 {
+        color: var(--text-primary);
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+
+    .chart-container canvas {
+        max-height: 250px;
+    }
+
+    /* Event Cards */
+    .event-image {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    /* Coach Profile */
+    .coach-profile-img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid var(--primary-color);
+        object-fit: cover;
+        margin-right: 12px;
+    }
+
+    /* Alert Styling */
+    .alert-success {
+        background: rgba(76, 175, 80, 0.15);
+        border: 1px solid rgba(76, 175, 80, 0.3);
+        color: var(--success-color);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+
+    /* Section Headings */
+    h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    h3 i {
+        margin-right: 8px;
+        color: var(--primary-color);
+    }
+
+    /* Text Colors */
+    .text-white {
+        color: var(--text-primary) !important;
+    }
+
+    .text-white-50 {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Mobile Responsiveness */
     @media (max-width: 768px) {
         .sidebar {
             width: 100%;
             min-height: auto;
             position: relative;
         }
+        
         .content {
-            padding: 15px;
+            padding: 20px 15px;
         }
+        
+        .page-title {
+            font-size: 1.5rem;
+        }
+        
         .card {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
+        
         .chart-container canvas {
-            max-height: 150px;
+            max-height: 180px;
         }
+        
+        .progress-ring {
+            width: 60px;
+            height: 60px;
+        }
+    }
+
+    /* Animation */
+    .fade-in {
+        animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 </style>
 
 <div class="d-flex">
     <!-- Sidebar -->
     <nav class="sidebar d-flex flex-column p-3">
-        <a href="{{ route('dashboard') }}" class="d-flex align-items-center mb-3 text-white text-decoration-none">
-            <span class="fs-5 fw-bold">DevRank</span>
+        <a href="{{ route('dashboard') }}" class="brand">
+            <span>DevRank</span>
         </a>
         <ul class="nav nav-pills flex-column">
             <li class="nav-item">
-                <a href="{{ route('dashboard') }}" class="nav-link {{ Route::is('dashboard') ? 'active' : '' }}"><i class="bi bi-house"></i>Dashboard</a>
+                <a href="{{ route('dashboard') }}" class="nav-link {{ Route::is('dashboard') ? 'active' : '' }}">
+                    <i class="bi bi-house"></i>Dashboard
+                </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('project.create') }}" class="nav-link {{ Route::is('project.create') ? 'active' : '' }}"><i class="bi bi-code-slash"></i>Submit Project</a>
+                <a href="{{ route('project.create') }}" class="nav-link {{ Route::is('project.create') ? 'active' : '' }}">
+                    <i class="bi bi-code-slash"></i>Submit Project
+                </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('coaching.index') }}" class="nav-link {{ Route::is('coaching.index') ? 'active' : '' }}"><i class="bi bi-person-video3"></i>Coaching</a>
+                <a href="{{ route('coaching.index') }}" class="nav-link {{ Route::is('coaching.index') ? 'active' : '' }}">
+                    <i class="bi bi-person-video3"></i>Coaching
+                </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('messages.index') }}" class="nav-link {{ Route::is('messages.index') ? 'active' : '' }}"><i class="bi bi-chat-square-text"></i>Messages</a>
+                <a href="{{ route('messages.index') }}" class="nav-link {{ Route::is('messages.index') ? 'active' : '' }}">
+                    <i class="bi bi-chat-square-text"></i>Messages
+                </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('profile.edit') }}" class="nav-link {{ Route::is('profile.edit') ? 'active' : '' }}"><i class="bi bi-person"></i>Profile</a>
+                <a href="{{ route('profile.edit') }}" class="nav-link {{ Route::is('profile.edit') ? 'active' : '' }}">
+                    <i class="bi bi-person"></i>Profile
+                </a>
             </li>
             <li class="nav-item">
                 <a href="{{ route('logout') }}" class="nav-link text-danger" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -199,31 +414,37 @@
     <!-- Main Content -->
     <div class="content flex-grow-1">
         <div class="container-fluid">
-            <h1 class="mb-3 text-white fw-bold">Welcome to Your Dashboard</h1>
+            <h1 class="page-title">Welcome to Your Dashboard</h1>
 
             @if (session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
+                <div class="alert alert-success fade-in">
+                    <i class="bi bi-check-circle me-2"></i>
+                    {{ session('success') }}
+                </div>
             @endif
 
             <!-- Statistics Section -->
-            <h3 class="mt-4 text-white">Your Stats</h3>
-            <div class="row g-3 mb-4">
+            <h3 class="mt-4"><i class="bi bi-graph-up"></i>Your Stats</h3>
+            <div class="row g-3 mb-4 fade-in">
                 <div class="col-md-4">
                     <div class="card">
                         <div class="card-header">
                             <h5 class="card-title">Project Completion</h5>
                         </div>
                         <div class="card-body text-center">
-                            <svg class="progress-ring" style="--progress: {{ $submissionCount * 25 }}">
-                                <defs>
-                                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stop-color="#0ff" />
-                                        <stop offset="100%" stop-color="#8a2be2" />
-                                    </linearGradient>
-                                </defs>
-                                <circle class="bg" cx="35" cy="35" r="30"></circle>
-                                <circle class="fg" cx="35" cy="35" r="30"></circle>
-                            </svg>
+                            <div class="progress-ring" style="--progress: {{ $submissionCount * 25 }}">
+                                <svg>
+                                    <defs>
+                                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stop-color="#0ff" />
+                                            <stop offset="100%" stop-color="#8a2be2" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle class="bg" cx="40" cy="40" r="35"></circle>
+                                    <circle class="fg" cx="40" cy="40" r="35"></circle>
+                                </svg>
+                                <div class="progress-text">{{ $submissionCount }}/4</div>
+                            </div>
                             <p>{{ $submissionCount }} of 4 Projects</p>
                         </div>
                     </div>
@@ -234,10 +455,13 @@
                             <h5 class="card-title">Average Score</h5>
                         </div>
                         <div class="card-body text-center">
-                            <svg class="progress-ring" style="--progress: {{ $submissions->avg('score') ?? 0 }}">
-                                <circle class="bg" cx="35" cy="35" r="30"></circle>
-                                <circle class="fg" cx="35" cy="35" r="30"></circle>
-                            </svg>
+                            <div class="progress-ring" style="--progress: {{ $submissions->avg('score') ?? 0 }}">
+                                <svg>
+                                    <circle class="bg" cx="40" cy="40" r="35"></circle>
+                                    <circle class="fg" cx="40" cy="40" r="35"></circle>
+                                </svg>
+                                <div class="progress-text">{{ round($submissions->avg('score') ?? 0) }}%</div>
+                            </div>
                             <p>{{ round($submissions->avg('score') ?? 0) }}%</p>
                         </div>
                     </div>
@@ -248,22 +472,82 @@
                             <h5 class="card-title">Coaching Sessions</h5>
                         </div>
                         <div class="card-body text-center">
-                            <svg class="progress-ring" style="--progress: {{ count($coachingSessions) * 20 }}">
-                                <circle class="bg" cx="35" cy="35" r="30"></circle>
-                                <circle class="fg" cx="35" cy="35" r="30"></circle>
-                            </svg>
+                            <div class="progress-ring" style="--progress: {{ count($coachingSessions) * 20 }}">
+                                <svg>
+                                    <circle class="bg" cx="40" cy="40" r="35"></circle>
+                                    <circle class="fg" cx="40" cy="40" r="35"></circle>
+                                </svg>
+                                <div class="progress-text">{{ count($coachingSessions) }}</div>
+                            </div>
                             <p>{{ count($coachingSessions) }} Sessions</p>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Payment Balance Section -->
+            <div class="row g-3 mb-4 fade-in">
+                <div class="col-md-8">
+                    <div class="card" style="background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(138, 43, 226, 0.1)); border: 1px solid rgba(0, 255, 255, 0.3);">
+                        <div class="card-header">
+                            <h5 class="card-title"><i class="bi bi-wallet2 me-2"></i>Account Balance</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="text-center">
+                                        <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary-color); margin-bottom: 0.5rem;">
+                                            ${{ number_format($accountBalance ?? 0, 2) }}
+                                        </div>
+                                        <p class="text-secondary">Available Balance</p>
+                                        <a href="{{ route('payment') }}" class="btn btn-custom">
+                                            <i class="bi bi-plus-circle me-2"></i>Add Funds
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="mb-3">Recent Payments</h6>
+                                    @if(isset($recentPayments) && $recentPayments->isNotEmpty())
+                                        @foreach($recentPayments->take(3) as $payment)
+                                            <div class="d-flex justify-content-between align-items-center mb-2 p-2" style="background: rgba(255,255,255,0.05); border-radius: 6px;">
+                                                <div>
+                                                    <small class="text-primary">${{ number_format($payment->amount, 2) }}</small><br>
+                                                    <small class="text-secondary">{{ $payment->created_at->format('M d, Y') }}</small>
+                                                </div>
+                                                <span class="badge {{ $payment->status == 'completed' ? 'bg-success' : 'bg-warning' }}">
+                                                    {{ ucfirst($payment->status) }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <p class="text-secondary small">No payment history yet.</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title"><i class="bi bi-graph-up me-2"></i>Total Spent</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--secondary-color); margin-bottom: 1rem;">
+                                ${{ number_format($totalPayments ?? 0, 2) }}
+                            </div>
+                            <p class="text-secondary">Lifetime Total</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Notifications Section -->
-            <h3 class="text-white">Notifications</h3>
+            <h3><i class="bi bi-bell"></i>Notifications</h3>
             @if($notifications->isEmpty())
                 <p class="text-white-50">No new notifications.</p>
             @else
-                <div class="row g-3">
+                <div class="row g-3 fade-in">
                     @foreach($notifications as $notification)
                         <div class="col-md-12">
                             <div class="notification-card {{ !$notification->is_read ? 'unread' : '' }}">
@@ -283,45 +567,45 @@
             @endif
 
             <!-- Charts Section -->
-            <h3 class="mt-4 text-white">Performance Analytics</h3>
-            <div class="row g-3 mb-4">
+            <h3 class="mt-4"><i class="bi bi-bar-chart"></i>Performance Analytics</h3>
+            <div class="row g-3 mb-4 fade-in">
                 <div class="col-md-6">
                     <div class="chart-container">
-                        <h5 class="mb-2 text-white">Submission Scores</h5>
+                        <h5 class="mb-2">Submission Scores</h5>
                         <canvas id="scoresLineChart"></canvas>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="chart-container">
-                        <h5 class="mb-2 text-white">Skills Distribution</h5>
+                        <h5 class="mb-2">Skills Distribution</h5>
                         <canvas id="skillsDoughnutChart"></canvas>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="chart-container">
-                        <h5 class="mb-2 text-white">Monthly Progress</h5>
+                        <h5 class="mb-2">Monthly Progress</h5>
                         <canvas id="monthlyBarChart"></canvas>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="chart-container">
-                        <h5 class="mb-2 text-white">Performance Metrics</h5>
+                        <h5 class="mb-2">Performance Metrics</h5>
                         <canvas id="performanceRadarChart"></canvas>
                     </div>
                 </div>
             </div>
 
             <!-- Project Submissions Section -->
-            <div class="row mb-4">
+            <div class="row mb-4 fade-in">
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="card-title">Project Submissions</h5>
+                            <h5 class="card-title"><i class="bi bi-code-slash me-2"></i>Project Submissions</h5>
                         </div>
                         <div class="card-body">
                             <p>You have submitted <strong>{{ $submissionCount }}</strong> out of <strong>4</strong> allowed projects.</p>
                             @if(!$canSubmit)
-                                <p class="text-danger">You’ve reached your submission limit.</p>
+                                <p class="text-danger">You've reached your submission limit.</p>
                                 <a href="{{ route('payment.initiate') }}" class="btn btn-custom">Make Payment</a>
                             @else
                                 <a href="{{ route('project.create') }}" class="btn btn-custom">Submit New Project</a>
@@ -332,11 +616,11 @@
             </div>
 
             <!-- Your Submissions Section -->
-            <h3 class="text-white">Your Submissions</h3>
+            <h3><i class="bi bi-file-earmark-code"></i>Your Submissions</h3>
             @if($submissions->isEmpty())
                 <p class="text-white-50">No submissions yet.</p>
             @else
-                <div class="row g-3">
+                <div class="row g-3 fade-in">
                     @foreach($submissions as $submission)
                         <div class="col-md-6">
                             <div class="card">
@@ -359,11 +643,11 @@
             @endif
 
             <!-- Recent Events Section -->
-            <h3 class="mt-4 text-white">Recent Events</h3>
+            <h3 class="mt-4"><i class="bi bi-calendar-event"></i>Recent Events</h3>
             @if($recentEvents->isEmpty())
                 <p class="text-white-50">No recent events available.</p>
             @else
-                <div class="row g-3">
+                <div class="row g-3 fade-in">
                     @foreach($recentEvents as $event)
                         <div class="col-md-4">
                             <div class="card">
@@ -371,7 +655,7 @@
                                     <h5 class="card-title">{{ $event->title }}</h5>
                                 </div>
                                 @if($event->image)
-                                    <img src="{{ asset('storage/' . $event->image) }}" class="event-image" alt="{{ $event->title }}" style="width: 100%; height: 120px; object-fit: cover;">
+                                    <img src="{{ asset('storage/' . $event->image) }}" class="event-image" alt="{{ $event->title }}">
                                 @endif
                                 <div class="card-body">
                                     <p class="card-text">{{ Str::limit($event->description, 80) }}</p>
@@ -386,11 +670,11 @@
             @endif
 
             <!-- Upcoming Events Section -->
-            <h3 class="mt-4 text-white">Upcoming Events</h3>
+            <h3 class="mt-4"><i class="bi bi-calendar-plus"></i>Upcoming Events</h3>
             @if($upcomingEvents->isEmpty())
                 <p class="text-white-50">No upcoming events available.</p>
             @else
-                <div class="row g-3">
+                <div class="row g-3 fade-in">
                     @foreach($upcomingEvents as $event)
                         <div class="col-md-4">
                             <div class="card">
@@ -398,7 +682,7 @@
                                     <h5 class="card-title">{{ $event->title }}</h5>
                                 </div>
                                 @if($event->image)
-                                    <img src="{{ asset('storage/' . $event->image) }}" class="event-image" alt="{{ $event->title }}" style="width: 100%; height: 120px; object-fit: cover;">
+                                    <img src="{{ asset('storage/' . $event->image) }}" class="event-image" alt="{{ $event->title }}">
                                 @endif
                                 <div class="card-body">
                                     <p class="card-text">{{ Str::limit($event->description, 80) }}</p>
@@ -413,11 +697,11 @@
             @endif
 
             <!-- Coaching Sessions Section -->
-            <h3 class="mt-4 text-white">Your Coaching Sessions</h3>
+            <h3 class="mt-4"><i class="bi bi-person-video3"></i>Your Coaching Sessions</h3>
             @if($coachingSessions->isEmpty())
                 <p class="text-white-50">No coaching sessions scheduled.</p>
             @else
-                <div class="row g-3">
+                <div class="row g-3 fade-in">
                     @foreach($coachingSessions as $session)
                         <div class="col-md-4">
                             <div class="card">

@@ -12,7 +12,6 @@
             <div class="slide" style="background-image: url('{{ asset('images/techss.jpg') }}');"></div>
         </div>
     </div>
-    <div class="overlay position-absolute w-100 h-100" style="background: linear-gradient(135deg, rgba(0, 98, 255, 0.6), rgba(0, 0, 0, 0.7)); z-index: 1;"></div>
     <div class="container text-center position-relative z-2 py-5">
         <h1 class="display-3 fw-bold slide-in">Explore Our Services</h1>
         <p class="lead mb-4 slide-in delay-1">Empowering student developers with tools and support to excel in tech.</p>
@@ -157,6 +156,10 @@
     }
 
     /* Hero Section */
+    .hero-section {
+        background: transparent; /* Removed background color */
+    }
+
     .hero-section h1 {
         font-size: 3.5rem;
         letter-spacing: -1px;
@@ -176,6 +179,7 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
+        opacity: 0.9; /* Adjusted for better image visibility */
     }
 
     .slider-track {
@@ -191,7 +195,7 @@
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-        filter: brightness(0.8);
+        filter: brightness(0.9) saturate(1); /* Adjusted for clearer images */
     }
 
     @keyframes slideForward {
@@ -396,7 +400,7 @@
         }
 
         .hero-section .lead {
-            font-size: 1rem;
+           etah font-size: 1rem;
         }
 
         .btn-lg {

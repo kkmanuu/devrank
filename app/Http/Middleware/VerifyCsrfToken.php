@@ -12,6 +12,10 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        'mpesa/callback',
+        'mpesa/validate',
+        'mpesa/confirm',
+        'mpesa/stk-push',
+        'mpesa/transaction-status',
     ];
 }

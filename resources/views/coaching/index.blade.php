@@ -42,7 +42,7 @@
         position: relative;
         padding: 6rem 0 4rem;
         overflow: hidden;
-        background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+        background: transparent; /* Removed background color */
         min-height: 70vh;
         display: flex;
         align-items: center;
@@ -74,7 +74,7 @@
         width: 100%;
         height: 100%;
         z-index: 0;
-        opacity: 0.3;
+        opacity: 0.8; /* Adjusted opacity for better visibility */
     }
 
     .slider-track {
@@ -89,7 +89,7 @@
         height: 100%;
         background-size: cover;
         background-position: center;
-        filter: brightness(0.4) saturate(0.7);
+        filter: brightness(0.8) saturate(1); /* Adjusted filter for clearer images */
     }
 
     @keyframes slideAnimation {
@@ -502,7 +502,7 @@
     }
 
     .btn-primary-modern {
-        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        background: personal: linear-gradient(135deg, var(--primary), var(--primary-light));
         color: white;
         box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
     }
@@ -737,27 +737,11 @@
             <h1 class="page-title fade-in">Discover Our Coaching Sessions</h1>
 
             @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show fade-in" role="alert">
-                    <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show fade-in" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+                <div class="alert alert-success">{{ session('success') }}</div>
             @endif
 
             @if($sessions->isEmpty())
-                <div class="empty-state fade-in">
-                    <i class="bi bi-calendar-x d-block"></i>
-                    <h4 class="fw-bold mb-3">No Sessions Currently Available</h4>
-                    <p class="mb-4">New sessions are added regularly. Subscribe to get notified when new opportunities are available.</p>
-                    <button class="btn btn-primary-modern btn-modern px-4 py-2">
-                        <i class="bi bi-bell-fill me-2"></i>Notify Me
-                    </button>
-                </div>
+                <p>No coaching sessions available yet.</p>
             @else
                 <!-- Filter Buttons -->
                 <div class="filter-section slide-in">
@@ -781,7 +765,7 @@
                                 <div class="card-header-modern">
                                     <h5 class="session-title">{{ $session->topic }}</h5>
                                     <p class="session-coach">
-                                        <i class="bi bi-person-circle me-1"></i>
+                                        <i class-="bi bi-person-circle me-1"></i>
                                         {{ $session->coach->name ?? 'Not Assigned' }}
                                     </p>
                                     <span class="status-badge status-{{ $session->status }}">
@@ -805,6 +789,11 @@
                                     <div class="session-info-item">
                                         <i class="bi bi-clock"></i>
                                         <span><strong>Time:</strong> {{ \Carbon\Carbon::parse($session->start_time)->format('h:i A') }}</span>
+                                    </div>
+                                    
+                                    <div class="session-info-item">
+                                        <i class="bi bi-currency-exchange"></i>
+                                        <span><strong>Price:</strong> {{ number_format($session->amount, 2) }} KES</span>
                                     </div>
                                     
                                     <div class="session-info-item">

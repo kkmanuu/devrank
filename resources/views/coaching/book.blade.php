@@ -26,6 +26,8 @@
     </div>
 </div>
 
+
+
 <section class="py-5 sparkle-wrapper position-relative overflow-hidden" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
     <!-- Sparkle Background -->
     <div class="sparkle-bg position-absolute top-0 start-0 w-100 h-100"></div>
@@ -56,6 +58,8 @@
 
                         <form action="{{ route('coaching.book', $session) }}" method="POST">
                             @csrf
+                            <input type="hidden" name="bookable_id" value="{{ $session->id }}">
+    <input type="hidden" name="bookable_type" value="{{ \App\Models\CoachingSession::class }}">
                             <div class="row g-4">
                                 <div class="col-md-6">
                                     <label for="full_name" class="form-label text-white fw-semibold">
@@ -72,6 +76,12 @@
                                     @error('email')<div class="text-warning mt-2 small"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-12">
+
+                                  <label for="phone_number" class="form-label text-white fw-semibold">
+            <i class="bi bi-phone me-2"></i>Phone Number (for M-Pesa)
+        </label>
+        <input type="text" class="form-control form-control-modern" id="phone_number" name="phone_number" required>
+    </div>
                                     <label for="question" class="form-label text-white fw-semibold">
                                         <i class="bi bi-chat-quote me-2"></i>Your Question (Optional)
                                     </label>
@@ -161,6 +171,7 @@
         --glass-bg: rgba(255, 255, 255, 0.1);
         --glass-border: rgba(255, 255, 255, 0.2);
     }
+
 
     body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

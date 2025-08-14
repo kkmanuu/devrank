@@ -22,6 +22,7 @@ class CoachingSession extends Model
         'created_by',
         'scheduled_at',
         'user_id',
+        'amount', 
     ];
 
     protected $casts = [
@@ -47,6 +48,11 @@ class CoachingSession extends Model
     {
         return $this->capacity - $this->bookings()->count();
     }
+
+ public function payments()
+{
+    return $this->hasMany(Payment::class, 'coaching_session_id');
+}
 
     public function getDeveloperTypeDisplayAttribute()
     {
