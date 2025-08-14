@@ -7,7 +7,6 @@ use App\Models\Booking;
 use App\Models\CoachingSession;
 use App\Models\ContactMessage;
 use App\Models\Event;
-use App\Models\EventRegistration;
 use App\Models\Feedback;
 use App\Models\Notification;
 use App\Models\Payment;
@@ -28,49 +27,49 @@ class AdminController extends Controller
     /**
      * Display the admin dashboard.
      */
-     public function adminDashboard()
-{
-    $totalUsers = User::count();
-    $totalSubmissions = Submission::count();
-    $pendingReviews = Submission::where('status', 'pending')->count();
-    $totalPayments = Payment::sum('amount');
-    $pendingMessages = ContactMessage::where('is_read', false)->count();
-    $eventBookings = Booking::where('bookable_type', Event::class)->count();
-    $eventParticipants = Booking::where('bookable_type', Event::class)
-        ->distinct('user_id')
-        ->count('user_id');
-    $coachingBookings = Booking::where('bookable_type', CoachingSession::class)->count();
-    $events = Event::latest()->take(3)->get();
-    $coachingSessions = CoachingSession::with('coach')->latest()->take(3)->get();
-    $services = Service::latest()->take(3)->get();
-    $totalServices = Service::count();
-    $eventRegistrations = $eventBookings;
-    $contactMessages = ContactMessage::latest()->take(3)->get();
+    public function adminDashboard()
+    {
+        $totalUsers = User::count();
+        $totalSubmissions = Submission::count();
+        $pendingReviews = Submission::where('status', 'pending')->count();
+        $totalPayments = Payment::sum('amount');
+        $pendingMessages = ContactMessage::where('is_read', false)->count();
+        $eventBookings = Booking::where('bookable_type', Event::class)->count();
+        $eventParticipants = Booking::where('bookable_type', Event::class)
+            ->distinct('user_id')
+            ->count('user_id');
+        $coachingBookings = Booking::where('bookable_type', CoachingSession::class)->count();
+        $events = Event::latest()->take(3)->get();
+        $coachingSessions = CoachingSession::with('coach')->latest()->take(3)->get();
+        $services = Service::latest()->take(3)->get();
+        $totalServices = Service::count();
+        $eventRegistrations = $eventBookings;
+        $contactMessages = ContactMessage::latest()->take(3)->get();
 
-    // Fetch user-specific notifications
-    $user = Auth::user();
-    $notifications = $user->notifications()->latest()->take(5)->get();
-    $unreadNotificationsCount = $user->unreadNotifications()->count();
+        // Fetch user-specific notifications
+        $user = Auth::user();
+        $notifications = $user->notifications()->latest()->take(5)->get();
+        $unreadNotificationsCount = $user->unreadNotifications()->count();
 
-    return view('admin.dashboard', compact(
-        'totalUsers',
-        'totalSubmissions',
-        'pendingReviews',
-        'totalPayments',
-        'pendingMessages',
-        'eventBookings',
-        'eventParticipants',
-        'eventRegistrations',
-        'coachingBookings',
-        'events',
-        'coachingSessions',
-        'services',
-        'totalServices',
-        'contactMessages',
-        'notifications',
-        'unreadNotificationsCount'
-    ));
-}
+        return view('admin.dashboard', compact(
+            'totalUsers',
+            'totalSubmissions',
+            'pendingReviews',
+            'totalPayments',
+            'pendingMessages',
+            'eventBookings',
+            'eventParticipants',
+            'eventRegistrations',
+            'coachingBookings',
+            'events',
+            'coachingSessions',
+            'services',
+            'totalServices',
+            'contactMessages',
+            'notifications',
+            'unreadNotificationsCount'
+        ));
+    }
 
 
     /**
@@ -185,6 +184,33 @@ class AdminController extends Controller
         return redirect()->route('admin.contact-messages.index')->with('success', 'Message marked as read.');
     }
 
+
+    // Show edit form
+public function editSubmission(Submission $submission)
+{
+    return view('admin.edit-submission', compact('submission'));
+}
+
+// Update submission
+public function updateSubmission(Request $request, Submission $submission)
+{
+    $request->validate([
+        'status' => 'required|in:pending,reviewed,rejected',
+        'score' => 'nullable|numeric|min:0|max:100'
+    ]);
+
+    $submission->update($request->only('status', 'score'));
+
+    return redirect()->route('admin.submissions')->with('success', 'Submission updated successfully.');
+}
+
+// Delete submission
+public function destroySubmission(Submission $submission)
+{
+    $submission->delete();
+    return redirect()->route('admin.submissions')->with('success', 'Submission deleted successfully.');
+}
+
     /**
      * Reply to a contact message and notify the user.
      */
@@ -241,15 +267,26 @@ class AdminController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'agenda' => 'nullable|string',
+            'about' => 'nullable|string',
+            'faqs' => 'nullable|array',
+            'faqs.*.question' => 'required_with:faqs|string',
+            'faqs.*.answer' => 'required_with:faqs|string',
             'event_date' => 'required|date',
             'start_time' => 'required',
             'capacity' => 'required|integer|min:1',
+             'amount' => 'required|numeric|min:0',
+            'location' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:upcoming,completed,cancelled',
             'image' => 'nullable|image|max:2048',
         ]);
 
         $data = $request->all();
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('events', 'public');
+        }
+        if ($request->faqs) {
+            $data['faqs'] = json_encode($request->faqs);
         }
 
         $event = Event::create($data);
@@ -272,6 +309,9 @@ class AdminController extends Controller
      */
     public function showEvent(Event $event)
     {
+        $event->load(['bookings.user' => function ($query) {
+            $query->where('role', 'student');
+        }]);
         return view('admin.events.show', compact('event'));
     }
 
@@ -307,6 +347,7 @@ class AdminController extends Controller
             'session_date' => 'required|date',
             'start_time' => 'required',
             'capacity' => 'required|integer|min:1',
+            'amount' => 'required|numeric|min:0', // Added price validation
             'status' => 'required|in:upcoming,completed,cancelled',
         ]);
 
