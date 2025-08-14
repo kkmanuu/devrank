@@ -37,6 +37,14 @@ class DashboardController extends Controller
         $notifications = $user->notifications()->latest()->take(5)->get();
         $recentEvents = Event::where('event_date', '>=', now()->subDays(30))->latest()->take(3)->get();
         $upcomingEvents = Event::where('event_date', '>=', now())->where('status', 'upcoming')->latest()->take(3)->get();
+        
+        // Add payment balance calculation similar to admin controller
+        $userPayments = $user->payments()->where('status', 'completed')->get();
+        $totalPayments = $userPayments->sum('amount');
+        $accountBalance = $totalPayments; // You can modify this logic based on your business rules
+        
+        // Get payment history
+        $recentPayments = $user->payments()->latest()->take(5)->get();
 
         return view('student.dashboard', compact(
             'submissionCount',
@@ -47,7 +55,10 @@ class DashboardController extends Controller
             'coachingSessions',
             'notifications',
             'recentEvents',
-            'upcomingEvents'
+            'upcomingEvents',
+            'totalPayments',
+            'accountBalance',
+            'recentPayments'
         ));
     }
 }
