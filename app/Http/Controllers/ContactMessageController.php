@@ -23,10 +23,10 @@ class ContactMessageController extends Controller
     {
         $validated = $request->validate([
             'name'       => 'required|string|max:255',
-            'email'      => 'required|email|max:255', // Made required since form requires it
+            'email'      => 'required|email|max:255',
             'phone'      => 'nullable|string|max:20',
             'company'    => 'nullable|string|max:255',
-            'subject'    => 'required|string|max:255', // Updated field name to match form
+            'subject'    => 'required|string|max:255',
             'message'    => 'required|string|max:5000',
             'newsletter' => 'nullable|boolean',
         ]);
