@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * PaymentController handles M-Pesa payments and booking confirmations.
+ */
 class PaymentController extends Controller
 {
     public function initiatePayment(Request $request)
@@ -56,7 +59,7 @@ class PaymentController extends Controller
         $shortcode = env('MPESA_SHORTCODE', '174379');
         $passkey = env('MPESA_PASSKEY');
         $timestamp = date('YmdHis');
-        $password = base64_encode($shortcode . $passkey . $timestamp);
+        $password = base64_encode($shortcode . $passkey . $timestamp);  
         $callbackUrl = env('MPESA_CALLBACK_URL', route('mpesa.callback'));
 
         $payload = [
@@ -116,6 +119,9 @@ class PaymentController extends Controller
         Log::error('STK Push failed', ['response' => $responseData]);
         return back()->with('error', 'Failed to initiate payment: ' . ($responseData['errorMessage'] ?? 'Unknown error'));
     }
+    /**
+     * Check payment status and handle booking confirmation.
+     */
   public function status(Payment $payment)
 {
     if ($payment->user_id !== Auth::id()) {
