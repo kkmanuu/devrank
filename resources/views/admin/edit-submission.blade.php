@@ -22,7 +22,7 @@
             <input type="number" name="score" class="form-control" value="{{ $submission->score }}">
         </div>
 
-        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="submit" class="btn btn-primary">Up</button>
         <a href="{{ route('admin.submissions') }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
